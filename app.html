@@ -42,6 +42,12 @@
     <script src="assets/js/pages/data-produk-form.js"></script>
     <!-- file pages lain -->
     <script src="assets/js/app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .catch(err => console.warn('SW gagal:', err));
+        }
+    </script>
 </body>
 
 </html>
