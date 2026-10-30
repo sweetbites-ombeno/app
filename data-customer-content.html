@@ -1,0 +1,46 @@
+<section class="page page--customer">
+
+    <!-- ============================================
+         HEADER CUSTOM
+         ============================================ -->
+    <div class="page-header">
+        <div class="page-header__top">
+            <a href="app.html?page=setting" class="page-header__btn" aria-label="Kembali">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+            </a>
+
+            <div class="page-header__title-wrap">
+                <h1 class="page-header__title">Kelola Customer</h1>
+                <p class="page-header__subtitle">Atur data customer Anda</p>
+            </div>
+
+            <button type="button" class="page-header__btn" id="btnRefreshCustomer" aria-label="Muat ulang">
+                <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <p class="page-header__count" id="customerCount">Memuat...</p>
+
+        <div class="page-header__search">
+            <i class="fa-solid fa-magnifying-glass page-header__search-icon" aria-hidden="true"></i>
+            <input type="search" id="searchCustomer" placeholder="Cari nama atau no. telp..." autocomplete="off">
+        </div>
+    </div>
+
+    <!-- ============================================
+         LIST CARD
+         ============================================ -->
+    <div class="kategori-list" id="customerList"></div>
+
+    <!-- Empty state -->
+    <div class="kategori-empty" id="customerEmpty" style="display:none">
+        <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
+        <p>Belum ada customer.</p>
+    </div>
+
+</section>
+
+<!-- FAB di luar .page agar tidak kena animasi fadeIn -->
+<button type="button" class="fab-add" data-action="add-customer" aria-label="Tambah customer">
+    <i class="fa-solid fa-plus" aria-hidden="true"></i>
+</button>

@@ -1,0 +1,53 @@
+<section class="page page--kategori">
+
+    <!-- ============================================
+         HEADER CUSTOM
+         ============================================ -->
+    <div class="page-header">
+        <!-- Baris 1: back | judul+subjudul | refresh -->
+        <div class="page-header__top">
+            <a href="app.html?page=setting" class="page-header__btn" aria-label="Kembali">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+            </a>
+
+            <div class="page-header__title-wrap">
+                <h1 class="page-header__title">Kelola Kategori</h1>
+                <p class="page-header__subtitle">Atur kategori produk Anda</p>
+            </div>
+
+            <button type="button" class="page-header__btn" id="btnRefreshKategori" aria-label="Muat ulang">
+                <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <!-- Baris 2: jumlah kategori (tengah) -->
+        <p class="page-header__count" id="kategoriCount">Memuat...</p>
+
+        <!-- Baris 3: search -->
+        <div class="page-header__search">
+            <i class="fa-solid fa-magnifying-glass page-header__search-icon" aria-hidden="true"></i>
+            <input type="search" id="searchKategori" placeholder="Cari kategori..." autocomplete="off">
+        </div>
+    </div>
+
+    <!-- ============================================
+         LIST CARD
+         ============================================ -->
+    <div class="kategori-list" id="kategoriList">
+        <!-- Card di-render oleh JS -->
+    </div>
+
+    <!-- Empty state (di-toggle oleh JS via style.display) -->
+    <div class="kategori-empty" id="kategoriEmpty" style="display:none">
+        <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
+        <p>Belum ada kategori.</p>
+    </div>
+
+</section>
+
+<!-- ============================================
+         FAB TAMBAH KATEGORI (kanan bawah)
+         ============================================ -->
+<button type="button" class="fab-add" data-action="add-kategori" aria-label="Tambah kategori">
+    <i class="fa-solid fa-plus" aria-hidden="true"></i>
+</button>

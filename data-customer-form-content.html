@@ -1,0 +1,50 @@
+<section class="page page--customer-form">
+
+    <!-- HEADER CUSTOM -->
+    <div class="page-header page-header--simple">
+        <div class="page-header__top">
+            <a href="app.html?page=data-customer" class="page-header__btn" aria-label="Kembali">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+            </a>
+
+            <div class="page-header__title-wrap">
+                <h1 class="page-header__title" id="formTitle">Tambah Customer</h1>
+                <p class="page-header__subtitle" id="formSubtitle">Isi data customer baru</p>
+            </div>
+
+            <span class="page-header__spacer" aria-hidden="true"></span>
+        </div>
+    </div>
+
+    <!-- FORM -->
+    <form class="kategori-form" id="customerForm" novalidate>
+        <input type="hidden" id="customerMode" value="add">
+        <input type="hidden" id="customerId" value="">
+
+        <div class="form-group">
+            <label for="customerName">Nama Customer</label>
+            <div class="form-group__input">
+                <i class="fa-solid fa-user form-group__icon" aria-hidden="true"></i>
+                <input type="text" id="customerName" name="customerName" placeholder="Contoh: Budi Santoso"
+                    autocomplete="off" maxlength="80">
+            </div>
+            <p class="form-hint">Nama customer wajib diisi.</p>
+        </div>
+
+        <div class="form-group">
+            <label for="customerTelp">No. Telepon</label>
+            <div class="form-group__input">
+                <i class="fa-solid fa-phone form-group__icon" aria-hidden="true"></i>
+                <input type="tel" id="customerTelp" name="customerTelp" placeholder="Contoh: 08123456789"
+                    autocomplete="off" maxlength="20">
+            </div>
+            <p class="form-hint">Opsional. Boleh dikosongkan.</p>
+        </div>
+
+        <button type="submit" class="btn-primary" id="btnSimpanCustomer">
+            <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+            Simpan
+        </button>
+    </form>
+
+</section>

@@ -1,0 +1,39 @@
+<section class="page page--kategori-form">
+
+    <!-- HEADER CUSTOM (hanya back + judul) -->
+    <div class="page-header page-header--simple">
+        <div class="page-header__top">
+            <a href="app.html?page=data-kategori" class="page-header__btn" aria-label="Kembali">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+            </a>
+            <div class="page-header__title-wrap">
+                <h1 class="page-header__title" id="formTitle">Tambah Kategori</h1>
+                <p class="page-header__subtitle" id="formSubtitle">Isi nama kategori baru</p>
+            </div>
+
+            <span class="page-header__spacer" aria-hidden="true"></span>
+        </div>
+    </div>
+
+    <!-- FORM -->
+    <form class="kategori-form" id="kategoriForm" novalidate>
+        <input type="hidden" id="kategoriMode" value="add">
+        <input type="hidden" id="kategoriId" value="">
+
+        <div class="form-group">
+            <label for="kategoriName">Nama Kategori</label>
+            <div class="form-group__input">
+                <i class="fa-solid fa-tag form-group__icon" aria-hidden="true"></i>
+                <input type="text" id="kategoriName" name="kategoriName" placeholder="Contoh: Makanan"
+                    autocomplete="off" maxlength="50">
+            </div>
+            <p class="form-hint" id="formHint">Nama kategori wajib diisi.</p>
+        </div>
+
+        <button type="submit" class="btn-primary" id="btnSimpanKategori">
+            <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+            Simpan
+        </button>
+    </form>
+
+</section>
