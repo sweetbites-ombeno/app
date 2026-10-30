@@ -281,10 +281,27 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
    LOGIN PAGE
    ============================================ */
 .login-main {
-    padding-bottom: 24px !important;
+    padding: 24px 16px !important;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    /* ← selalu dari atas */
     justify-content: center;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Untuk layar tinggi: center secara vertikal via margin auto pada .login */
+@media (min-height: 701px) {
+    .login-main {
+        align-items: center;
+    }
+}
+
+/* Pastikan .login tidak menyusut & punya ruang napas */
+.login {
+    flex-shrink: 0;
+    min-height: min-content;
+    /* ← jangan pernah kompres */
 }
 
 .login {
