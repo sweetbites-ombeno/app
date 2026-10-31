@@ -186,6 +186,7 @@
         $(async function () {
             try {
                 await db.open();
+                await ensureBackupRow();   // pastikan row ada (tanpa alert)
                 if ((await hitungUserAktif()) === 0) {
                     tampilkanPilihan();
                 } else {
@@ -275,6 +276,9 @@
                     name : 'Umum',
                     no_telp: '-',
                 });
+
+                // tambah data backup
+              await ensureBackupRow();   // buat row singleton kalau belum ada
 
                 masukKeHome(id);   // langsung ke home, tanpa lewat form login
             } catch (err) {

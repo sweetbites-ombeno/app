@@ -156,6 +156,11 @@ async function navigateTo(page, opts = { pushState: true }) {
             await PAGE_INIT[page]();
         }
 
+      // ⬇️⬇️ TRIGGER CEK BACKUP HARIAN ⬇️⬇️
+      // tidak di-await agar tidak menunda render;
+      // fungsi internal sudah ada guard agar tidak dobel-trigger
+      cekBackupHarian();
+
         // ── Update header title dengan aman ──
         // Query ULANG setiap kali (jangan pakai referensi lama),
         // dan cek null sebelum set textContent.
