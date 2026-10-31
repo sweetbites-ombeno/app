@@ -78,48 +78,60 @@ async function ensureBackupRow() {
  * Aman dipanggil di halaman apapun (debounced via flag).
  */
 let _backupCheckRunning = false;
+
+function _showBackupModal() {
+  return new Promise(function (resolve) {
+    const modal = document.getElementById('backupModal');
+    const btn = document.getElementById('btnBackupNow');
+    if (!modal || !btn) { alert('Belum ada backup hari ini.'); resolve(); return; }
+
+    const originalHTML = btn.innerHTML;
+    modal.hidden = false;
+
+    function onOk() {
+      btn.removeEventListener('click', onOk);
+      // loading state
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
+      modal.hidden = true;
+
+      // kembalikan tombol setelah beberapa saat (jaga-jaga error)
+      setTimeout(function () {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+      }, 1000);
+
+      resolve();
+    }
+    btn.addEventListener('click', onOk);
+  });
+}
+
 async function cekBackupHarian() {
-  // cegah dobel-trigger (mis. navigateTo dipanggil cepat berkali-kali)
-  if (_backupCheckRunning) return;
-  _backupCheckRunning = true;
+    if (_backupCheckRunning) return;
+    _backupCheckRunning = true;
 
-  try {
-    const row = await ensureBackupRow();
+    try {
+        const row = await ensureBackupRow();
+        if (row.status === '1') return;
 
-    if (row.status === '1') {
-      // sudah backup hari ini → tidak perlu apa-apa
-      return;
+        // tampilkan modal, tunggu user klik tombol (selalu 1 tombol)
+        await _showBackupModal();
+
+        if (typeof backupDatabase !== 'function') {
+            alert('Fungsi backup tidak tersedia.');
+            return;
+        }
+        await backupDatabase();
+
+        await db.backup_db.update(BACKUP_ROW_ID, {
+            status: '1',
+            date_now: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        });
+    } catch (err) {
+        console.error('[backup-harian] Gagal:', err);
+    } finally {
+        _backupCheckRunning = false;
     }
-
-    // belum backup → konfirmasi
-    const mau = confirm(
-      'Belum ada backup data hari ini.\n\n' +
-      'Backup sekarang?\n' +
-      '(Klik Batal untuk melewati hari ini)'
-    );
-
-    if (!mau) {
-      // user menolak → biarkan status '0', alert akan muncul lagi
-      // saat halaman berikutnya dibuka (atau refresh)
-      return;
-    }
-
-    // jalankan backup
-    if (typeof backupDatabase !== 'function') {
-      alert('Fungsi backup tidak tersedia.');
-      return;
-    }
-    await backupDatabase();
-
-    // tandai sudah backup hari ini
-    await db.backup_db.update(BACKUP_ROW_ID, {
-      status: '1',
-      date_now: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    });
-  } catch (err) {
-    console.error('[backup-harian] Gagal:', err);
-  } finally {
-    _backupCheckRunning = false;
-  }
 }

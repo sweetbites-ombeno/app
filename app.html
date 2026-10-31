@@ -28,6 +28,24 @@
         </main>
 
         <div id="footer"></div>
+
+        <!-- Modal backup harian -->
+        <div id="backupModal" class="modal-backup" role="dialog" aria-modal="true" aria-labelledby="backupModalTitle" hidden>
+          <div class="modal-backup__box">
+            <div class="modal-backup__icon">
+              <i class="fa-solid fa-database" aria-hidden="true"></i>
+            </div>
+            <h2 class="modal-backup__title" id="backupModalTitle">Backup Harian</h2>
+            <p class="modal-backup__text">
+              Belum ada backup data hari ini.<br>
+              Klik tombol di bawah untuk memulai backup sekarang.
+            </p>
+            <button type="button" class="btn-primary" id="btnBackupNow">
+              <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
+              Backup Sekarang
+            </button>
+          </div>
+        </div>
     </div>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <script src="https://unpkg.com/dexie-export-import"></script>
