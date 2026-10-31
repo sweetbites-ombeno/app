@@ -281,39 +281,32 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
    LOGIN PAGE
    ============================================ */
 .login-main {
-    padding: 24px 16px !important;
-    display: flex;
-    align-items: flex-start;
-    /* ← selalu dari atas */
-    justify-content: center;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-/* Untuk layar tinggi: center secara vertikal via margin auto pada .login */
-@media (min-height: 701px) {
-    .login-main {
-        align-items: center;
-    }
-}
-
-/* Pastikan .login tidak menyusut & punya ruang napas */
-.login {
-    flex-shrink: 0;
-    min-height: min-content;
-    /* ← jangan pernah kompres */
+  padding: 24px 16px !important;
+  display: flex;
+  align-items: flex-start;
+  /* bukan center */
+  justify-content: center;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  flex: 1 1 auto;
+  min-height: 0;
+  /* kunci scroll di flex column */
 }
 
 .login {
-    width: 100%;
-    max-width: 380px;
-    margin: 0 auto;
-    padding: 32px 8px 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    animation: fadeIn 0.3s ease;
+  margin: auto;
+  /* centering aman + scrollable */
+  width: 100%;
+  max-width: 380px;
+  padding: 32px 8px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: fadeIn 0.3s ease;
+  flex-shrink: 0;
 }
+
+/* Hapus @media (min-height: 701px) { .login-main { align-items: center; } } */
 
 .login__logo {
     width: 72px;
