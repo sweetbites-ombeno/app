@@ -6,7 +6,6 @@ async function initSetting() {
     const id = sessionStorage.getItem("login");
     const user = id ? await db.user.get(id) : null;
 
-    // Sesi tidak valid atau akun sudah dihapus: kembali ke login
     if (!user || user.deleted_at) {
         sessionStorage.removeItem("login");
         location.replace("index.html");
@@ -15,10 +14,11 @@ async function initSetting() {
 
     const name = document.querySelector(".user-card__name");
     const username = document.querySelector(".user-card__username");
-
-    // textContent aman dari HTML, jadi tidak perlu escape
-    name.textContent = user.name || user.username;   // kalau nama kosong, pakai username
+    name.textContent = user.name || user.username;
     username.textContent = "@" + user.username;
+
+    // ⬇️ bind modal reset (idempotent via flag)
+    _bindResetModal();
 }
 
 /* ============================================
@@ -93,4 +93,206 @@ async function backupDatabase() {
         // Kembalikan ikon
         if (iconEl) iconEl.className = prevIconClass;
     }
+}
+
+/* ============================================
+   RESET DATABASE (hapus semua + skema)
+   ============================================ */
+
+function _openResetModal() {
+  const modal = document.getElementById('resetModal');
+  const step1 = document.getElementById('resetStep1');
+  const step2 = document.getElementById('resetStep2');
+  if (!modal) return;
+
+  // reset state
+  step1.hidden = false;
+  step2.hidden = true;
+  document.getElementById('resetUsername').value = '';
+  document.getElementById('resetPassword').value = '';
+  document.getElementById('resetError').textContent = '';
+
+  modal.hidden = false;
+}
+
+function _closeResetModal() {
+  const modal = document.getElementById('resetModal');
+  if (modal) modal.hidden = true;
+}
+
+function _showResetStep2() {
+  document.getElementById('resetStep1').hidden = true;
+  document.getElementById('resetStep2').hidden = false;
+  setTimeout(() => {
+    document.getElementById('resetUsername').focus();
+  }, 100);
+}
+
+function _showResetStep1() {
+  document.getElementById('resetStep1').hidden = false;
+  document.getElementById('resetStep2').hidden = true;
+  document.getElementById('resetError').textContent = '';
+}
+
+/** Hapus seluruh database + skema, lalu redirect ke login */
+async function _hapusDatabaseDanRedirect() {
+  _dbDeleting = true;             // ← tambahan
+  try {
+    try { db.close(); } catch (e) { }   // ← tambahan
+    // timeout 5 detik untuk db.delete()
+    await Promise.race([
+      db.delete(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Database masih digunakan di tab lain. Tutup tab lain lalu coba lagi.')), 5000)
+      )
+    ]);
+
+    // fallback defensif — hanya jika API tersedia
+    try {
+      if (indexedDB.databases) {
+        const sisa = await indexedDB.databases();
+        for (const d of sisa) {
+          if (d.name === 'posDB') {
+            await new Promise((resolve) => {
+              const req = indexedDB.deleteDatabase(d.name);
+              req.onsuccess = req.onerror = req.onblocked = () => resolve();
+            });
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[reset] skip indexedDB.databases():', e);
+    }
+
+    try { localStorage.removeItem('produkView'); } catch (e) { }
+    sessionStorage.removeItem('login');
+
+    location.replace('index.html');
+  } catch (err) {
+    _dbDeleting = false;
+    console.error('[reset] Gagal hapus database:', err);
+    alert('Gagal reset database: ' + (err.message || 'Terjadi kesalahan'));
+  }
+}
+
+/** Verifikasi username & password terhadap user aktif */
+async function _verifikasiUserReset(username, password) {
+  const u = String(username || '').trim().toLowerCase();
+  if (!u || !password) return false;
+
+  const user = await db.user
+    .where('username').equals(u)
+    .filter(function (x) { return !x.deleted_at; })
+    .first();
+  if (!user) return false;
+
+  return verifikasiPassword(password, user.password);
+}
+
+/** Bind event modal reset (dipanggil sekali saat initSetting) */
+function _bindResetModal() {
+  if (window._resetModalBound) return;
+
+  const modal = document.getElementById('resetModal');
+  if (!modal) return;
+
+  const step1 = document.getElementById('resetStep1');
+  const step2 = document.getElementById('resetStep2');
+  const errorEl = document.getElementById('resetError');
+  if (!step1 || !step2 || !errorEl) {
+    console.warn('[reset] elemen modal tidak lengkap');
+    return;
+  }
+
+  // --- Step 1: Backup Dulu ---
+  document.getElementById('btnResetBackup').addEventListener('click', async function () {
+    if (typeof backupDatabase !== 'function') {
+      alert('Fungsi backup tidak tersedia.');
+      return;
+    }
+    const btn = this;
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Backup...';
+    try {
+      await backupDatabase();
+      // tandai sudah backup hari ini
+      if (typeof BACKUP_ROW_ID !== 'undefined' && db.backup_db) {
+        try {
+          await db.backup_db.update(BACKUP_ROW_ID, {
+            status: '1',
+            date_now: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+        } catch (e) { }
+      }
+    } catch (err) {
+      console.error('[reset] Backup gagal:', err);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = original;
+    }
+  });
+
+  // --- Step 1: Lanjut ---
+  document.getElementById('btnResetNext').addEventListener('click', _showResetStep2);
+
+  // --- Step 1: Batal ---
+  document.getElementById('btnResetCancel1').addEventListener('click', _closeResetModal);
+
+  // --- Step 2: Kembali ---
+  document.getElementById('btnResetBack2').addEventListener('click', _showResetStep1);
+
+  // --- Step 2: Submit (verifikasi + hapus) ---
+  step2.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    errorEl.textContent = '';
+
+    const username = document.getElementById('resetUsername').value.trim();
+    const password = document.getElementById('resetPassword').value;
+
+    if (!username || !password) {
+      errorEl.textContent = 'Username dan password wajib diisi.';
+      return;
+    }
+
+    const btn = document.getElementById('btnResetConfirm');
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memverifikasi...';
+
+    try {
+      const valid = await _verifikasiUserReset(username, password);
+      if (!valid) {
+        errorEl.textContent = 'Username atau password salah.';
+        document.getElementById('resetPassword').value = '';
+        document.getElementById('resetPassword').focus();
+        return;
+      }
+
+      // Verifikasi sukses → hapus DB + redirect
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menghapus...';
+      await _hapusDatabaseDanRedirect();
+    } catch (err) {
+      console.error('[reset] Gagal:', err);
+      errorEl.textContent = 'Gagal: ' + (err.message || 'Terjadi kesalahan');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = original;
+    }
+  });
+
+  // --- Klik backdrop (opsional) untuk tutup pada step 1 ---
+  modal.addEventListener('click', function (e) {
+    if (e.target === modal && !step1.hidden) _closeResetModal();
+  });
+
+  // --- ESC untuk tutup pada step 1 ---
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !modal.hidden && !step1.hidden) {
+      _closeResetModal();
+    }
+  });
+
+  window._resetModalBound = true; // ← set DI AKHIR
 }

@@ -106,8 +106,9 @@ function _showBackupModal() {
     btn.addEventListener('click', onOk);
   });
 }
-
+let _dbDeleting = false;
 async function cekBackupHarian() {
+    if (_dbDeleting) return;
     if (_backupCheckRunning) return;
     _backupCheckRunning = true;
 
@@ -123,15 +124,40 @@ async function cekBackupHarian() {
             return;
         }
         await backupDatabase();
-
-        await db.backup_db.update(BACKUP_ROW_ID, {
-            status: '1',
-            date_now: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-        });
+        if (!_dbDeleting) {
+          await db.backup_db.update(BACKUP_ROW_ID, {
+              status: '1',
+              date_now: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+          });
+        }
     } catch (err) {
         console.error('[backup-harian] Gagal:', err);
     } finally {
         _backupCheckRunning = false;
     }
+}
+
+/* ============================================
+   HASH PASSWORD (PBKDF2) — dipakai login & reset
+   ============================================ */
+function bytesToHex(bytes) {
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function hexToBytes(hex) {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+  return bytes;
+}
+async function hashPassword(password, saltHex) {
+  const salt = saltHex ? hexToBytes(saltHex) : crypto.getRandomValues(new Uint8Array(16));
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password),
+    'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, key, 256);
+  return bytesToHex(salt) + ':' + bytesToHex(new Uint8Array(bits));
+}
+async function verifikasiPassword(password, tersimpan) {
+  const saltHex = tersimpan.split(':')[0];
+  return (await hashPassword(password, saltHex)) === tersimpan;
 }

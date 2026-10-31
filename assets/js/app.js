@@ -310,6 +310,15 @@ function bindSettingActions() {
             return;
         }
 
+      // ---- Reset database ----  ⬅️ TAMBAHAN BARU
+      const btnReset = e.target.closest("[data-action='reset-database']");
+      if (btnReset) {
+        e.preventDefault();
+        if (typeof _openResetModal === "function") _openResetModal();
+        else alert("Fungsi reset tidak tersedia.");
+        return;
+      }
+
         // ---- Update password ----
         const btnPassword = e.target.closest("[data-action='update-password']");
         if (btnPassword) {

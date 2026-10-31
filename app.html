@@ -46,6 +46,80 @@
             </button>
           </div>
         </div>
+
+        <!-- ============================================
+             MODAL RESET DATABASE
+             ============================================ -->
+        <div id="resetModal" class="modal-reset" role="dialog" aria-modal="true" aria-labelledby="resetModalTitle" hidden>
+        
+          <!-- STEP 1: Peringatan + Backup -->
+          <div class="modal-reset__box" id="resetStep1">
+            <div class="modal-reset__icon modal-reset__icon--warning">
+              <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            </div>
+            <h2 class="modal-reset__title" id="resetModalTitle">Reset Database</h2>
+            <p class="modal-reset__text">
+              Semua data (user, produk, kategori, customer, penjualan, riwayat)
+              akan <strong>dihapus permanen</strong>. Disarankan untuk
+              mem-backup database terlebih dahulu.
+            </p>
+        
+            <div class="modal-reset__actions">
+              <button type="button" class="btn-secondary" id="btnResetBackup">
+                <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
+                Backup Dulu
+              </button>
+              <button type="button" class="btn-primary" id="btnResetNext">
+                Lanjut
+                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+              </button>
+            </div>
+        
+            <button type="button" class="modal-reset__cancel" id="btnResetCancel1">
+              Batal
+            </button>
+          </div>
+        
+          <!-- STEP 2: Verifikasi Username & Password -->
+          <form class="modal-reset__box" id="resetStep2" hidden novalidate>
+            <div class="modal-reset__icon modal-reset__icon--danger">
+              <i class="fa-solid fa-lock" aria-hidden="true"></i>
+            </div>
+            <h2 class="modal-reset__title">Verifikasi Akun</h2>
+            <p class="modal-reset__text">
+              Masukkan username dan password Anda untuk konfirmasi.
+            </p>
+        
+            <div class="form-group" style="text-align:left">
+              <label for="resetUsername">Username</label>
+              <div class="form-group__input">
+                <i class="fa-regular fa-user form-group__icon" aria-hidden="true"></i>
+                <input type="text" id="resetUsername" placeholder="Username" autocomplete="username" autocapitalize="none">
+              </div>
+            </div>
+        
+            <div class="form-group" style="text-align:left">
+              <label for="resetPassword">Password</label>
+              <div class="form-group__input">
+                <i class="fa-solid fa-lock form-group__icon" aria-hidden="true"></i>
+                <input type="password" id="resetPassword" placeholder="Password" autocomplete="current-password">
+              </div>
+            </div>
+        
+            <p class="modal-reset__error" id="resetError" role="alert"></p>
+        
+            <div class="modal-reset__actions">
+              <button type="button" class="btn-secondary" id="btnResetBack2">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                Kembali
+              </button>
+              <button type="submit" class="btn-danger" id="btnResetConfirm">
+                <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                Hapus Database
+              </button>
+            </div>
+          </form>
+        </div>
     </div>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <script src="https://unpkg.com/dexie-export-import"></script>
