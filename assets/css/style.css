@@ -360,6 +360,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     text-align: center;
 }
 
+input[type="file"] {
+    font-size: 16px;
+}
+
 .form-group {
     display: flex;
     flex-direction: column;
@@ -393,7 +397,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     height: 48px;
     padding: 0 14px 0 40px;
     font-family: inherit;
-    font-size: 15px;
+    font-size: 16px;
     color: var(--color-text);
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
@@ -707,6 +711,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     flex-direction: column;
     gap: 10px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    /* tambahkan ini agar iOS tidak "loncat" saat scroll */
+        -webkit-transform: translateZ(0);
 }
 
 .page-header__top {
@@ -800,7 +806,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     height: 40px;
     padding: 0 12px 0 34px;
     font-family: inherit;
-    font-size: 14px;
+    font-size: 16px;
     color: var(--color-text);
     background-color: #f1f5f9;
     border: 1px solid transparent;
@@ -1033,7 +1039,7 @@ body.hide-app-chrome #footer {
 
 /* Saat header/footer disembunyikan, area main dapat ruang penuh */
 body.hide-app-chrome #main-content {
-    padding-bottom: 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
     /* tidak perlu ruang untuk nav */
 }
 
@@ -1499,7 +1505,7 @@ body.hide-app-chrome #main-content {
     height: 48px;
     padding: 0 36px 0 40px;
     font-family: inherit;
-    font-size: 15px;
+    font-size: 16px;
     color: var(--color-text);
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
