@@ -70,53 +70,64 @@ function renderProdukFilterBadges() {
     }).join("");
 }
 
+let _produkUserMap = {};   // { id_user: {name, username} }
+
+/* ---------- Render list (tambahkan pemilik) ---------- */
 function renderProdukList(filter = "") {
-    const list = document.getElementById("produkList");
-    const empty = document.getElementById("produkEmpty");
-    const countEl = document.getElementById("produkCount");
-    if (!list) return;
+  const list = document.getElementById("produkList");
+  const empty = document.getElementById("produkEmpty");
+  const countEl = document.getElementById("produkCount");
+  if (!list) return;
 
-    const q = filter.trim().toLowerCase();
-    const filtered = _produkCache.filter(function (p) {
-        // Filter kategori (badge)
-        if (_produkFilterKategori && p.kategori !== _produkFilterKategori) {
-            return false;
-        }
-        // Filter pencarian
-        const name = (p.name || "").toLowerCase();
-        const kat = (_produkKategoriMap[p.kategori] || "").toLowerCase();
-        return name.includes(q) || kat.includes(q);
-    });
+  const q = filter.trim().toLowerCase();
+  const filtered = _produkCache.filter(function (p) {
+    if (_produkFilterKategori && p.kategori !== _produkFilterKategori) return false;
+    const name = (p.name || "").toLowerCase();
+    const kat = (_produkKategoriMap[p.kategori] || "").toLowerCase();
+    return name.includes(q) || kat.includes(q);
+  });
 
-    if (countEl) {
-        countEl.textContent = q
-            ? `${filtered.length} hasil pencarian`
-            : `${_produkCache.length} produk`;
-    }
+  if (countEl) {
+    countEl.textContent = q
+      ? `${filtered.length} hasil pencarian`
+      : `${_produkCache.length} produk`;
+  }
 
-    list.innerHTML = filtered.map(function (p) {
-        const nama = escapeHTML(p.name || "");
-        const katName = escapeHTML(_produkKategoriMap[p.kategori] || "-");
-        const harga = "Rp " + Number(p.harga_jual || 0).toLocaleString("id-ID");
+  list.innerHTML = filtered.map(function (p) {
+    const nama = escapeHTML(p.name || "");
+    const katName = escapeHTML(_produkKategoriMap[p.kategori] || "-");
+    const harga = "Rp " + Number(p.harga_jual || 0).toLocaleString("id-ID");
 
-        let imgHTML;
-        if (p.image_base64) {
-            imgHTML = `<img class="produk-card__img" src="${p.image_base64}" alt="${nama}" loading="lazy"
+    // ⬇️ Pemilik
+    const owner = _produkUserMap[p.id_user];
+    const ownerName = owner ? (owner.username || owner.name || "") : "";
+    const ownerHTML = ownerName
+      ? `<span class="produk-card__owner" title="Pemilik: ${escapeHTML(owner.name || ownerName)}">
+                 <i class="fa-solid fa-user" aria-hidden="true"></i>${escapeHTML(ownerName)}
+               </span>`
+      : "";
+
+    let imgHTML;
+    if (p.image_base64) {
+      imgHTML = `<img class="produk-card__img" src="${p.image_base64}" alt="${nama}" loading="lazy"
                     data-action="preview-produk-img" data-id="${p.id}" role="button" tabindex="0">`;
-        } else {
-            imgHTML = `<div class="produk-card__img produk-card__img--empty">
+    } else {
+      imgHTML = `<div class="produk-card__img produk-card__img--empty">
                    <i class="fa-regular fa-image" aria-hidden="true"></i>
                </div>`;
-        }
+    }
 
-        return `
+    return `
             <div class="produk-card" data-id="${p.id}">
                 <div class="produk-card__media">${imgHTML}</div>
                 <div class="produk-card__body">
                     <h3 class="produk-card__name">${nama}</h3>
-                    <span class="produk-card__kategori">
-                        <i class="fa-solid fa-tag" aria-hidden="true"></i>${katName}
-                    </span>
+                    <div class="produk-card__meta">
+                        <span class="produk-card__kategori">
+                            <i class="fa-solid fa-tag" aria-hidden="true"></i>${katName}
+                        </span>
+                        ${ownerHTML}
+                    </div>
                     <span class="produk-card__harga">${harga}</span>
                 </div>
                 <div class="produk-card__actions">
@@ -132,55 +143,59 @@ function renderProdukList(filter = "") {
                 </div>
             </div>
         `;
-    }).join("");
+  }).join("");
 
-    if (empty) {
-        if (_produkCache.length === 0) {
-            empty.style.display = "flex";
-            empty.innerHTML = `<i class="fa-solid fa-box-open" aria-hidden="true"></i><p>Belum ada produk.</p>`;
-        } else if (filtered.length === 0) {
-            empty.style.display = "flex";
-            empty.innerHTML = `<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><p>Tidak ada produk yang cocok.</p>`;
-        } else {
-            empty.style.display = "none";
-        }
+  if (empty) {
+    if (_produkCache.length === 0) {
+      empty.style.display = "flex";
+      empty.innerHTML = `<i class="fa-solid fa-box-open" aria-hidden="true"></i><p>Belum ada produk.</p>`;
+    } else if (filtered.length === 0) {
+      empty.style.display = "flex";
+      empty.innerHTML = `<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><p>Tidak ada produk yang cocok.</p>`;
+    } else {
+      empty.style.display = "none";
     }
+  }
 }
 
+/* ---------- Load DB (tambahkan load user) ---------- */
 async function loadProdukFromDB() {
-    try {
-        _produkCache = await db.produk
-            .filter(function (p) { return !p.deleted_at; })
-            .toArray();
+  try {
+    _produkCache = await db.produk
+      .filter(function (p) { return !p.deleted_at; })
+      .toArray();
+    _produkCache.sort(function (a, b) {
+      return (a.name || "").localeCompare(b.name || "");
+    });
 
-        _produkCache.sort(function (a, b) {
-            return (a.name || "").localeCompare(b.name || "");
-        });
+    const kats = await db.kategori
+      .filter(function (k) { return !k.deleted_at; })
+      .toArray();
+    _produkKategoriMap = {};
+    kats.forEach(function (k) { _produkKategoriMap[k.id] = k.name; });
 
-        // Bangun map kategori (hanya yang belum dihapus)
-        const kats = await db.kategori
-            .filter(function (k) { return !k.deleted_at; })
-            .toArray();
-        _produkKategoriMap = {};
-        kats.forEach(function (k) { _produkKategoriMap[k.id] = k.name; });
+    // ⬇️ Load user map
+    const users = await db.user
+      .filter(function (u) { return !u.deleted_at; })
+      .toArray();
+    _produkUserMap = {};
+    users.forEach(function (u) { _produkUserMap[u.id] = u; });
 
-        // Render badge filter kategori
-        renderProdukFilterBadges();
-
-        const search = document.getElementById("searchProduk");
-        renderProdukList(search ? search.value : "");
-    } catch (err) {
-        console.error("[data-produk] Gagal memuat:", err);
-        const list = document.getElementById("produkList");
-        if (list) {
-            list.innerHTML = `
+    renderProdukFilterBadges();
+    const search = document.getElementById("searchProduk");
+    renderProdukList(search ? search.value : "");
+  } catch (err) {
+    console.error("[data-produk] Gagal memuat:", err);
+    const list = document.getElementById("produkList");
+    if (list) {
+      list.innerHTML = `
                 <div class="page__placeholder">
                     <i class="fa-solid fa-triangle-exclamation page__placeholder-icon"></i>
                     <h2 class="page__placeholder-title">Gagal memuat</h2>
                     <p class="page__placeholder-text">${escapeHTML(err.message || "Terjadi kesalahan")}</p>
                 </div>`;
-        }
     }
+  }
 }
 
 async function initDataProduk() {

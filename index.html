@@ -234,7 +234,8 @@
                     id: id,
                     name : name,
                     username: username,
-                    password: await hashPassword(password)
+                    password: await hashPassword(password),
+                    status: 1 // nanti saat bisa online secara default akan 0
                 });
 
                 // tambah customer

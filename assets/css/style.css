@@ -2223,3 +2223,58 @@ body.img-preview-open {
     color: var(--color-text);
     font-weight: 600;
 }
+
+/* ============================================
+   PRODUK CARD — META (KATEGORI + PEMILIK)
+   ============================================ */
+.produk-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  min-width: 0;
+}
+
+.produk-card__owner {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #7c3aed;
+  background-color: #ede9fe;
+  padding: 2px 8px;
+  border-radius: 999px;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.produk-card__owner i {
+  font-size: 8px;
+  flex-shrink: 0;
+}
+
+/* Grid mode: perkecil owner sedikit */
+.produk-list.is-grid .produk-card__owner {
+  font-size: 10px;
+  padding: 2px 6px;
+}
+
+/* List mode: pastikan tidak overflow */
+.produk-list.is-list .produk-card__meta {
+  gap: 4px 8px;
+}
+
+.produk-list.is-list .produk-card__owner {
+  font-size: 11px;
+}
+
+/* ============================================
+   HOME — Gambar produk: cursor pointer, bukan zoom
+   (klik = tambah qty, bukan preview)
+   ============================================ */
+.page--home .produk-card__img {
+  cursor: pointer;
+}
