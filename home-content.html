@@ -1,7 +1,55 @@
 <section class="page page--home">
-    <div class="page__placeholder">
-        <i class="fa-solid fa-house page__placeholder-icon"></i>
-        <h2 class="page__placeholder-title">Home</h2>
-        <p class="page__placeholder-text">Halaman utama siap diisi konten.</p>
+
+    <!-- HEADER CUSTOM (minimalis: hanya jumlah produk + search + filter) -->
+    <div class="page-header">
+        <p class="page-header__count" id="homeProdukCount">Memuat...</p>
+
+        <!-- Search + toggle view -->
+        <div class="produk-toolbar">
+            <div class="page-header__search produk-toolbar__search">
+                <i class="fa-solid fa-magnifying-glass page-header__search-icon" aria-hidden="true"></i>
+                <input type="search" id="searchHome" placeholder="Cari produk..." autocomplete="off">
+            </div>
+
+            <div class="view-toggle" role="group" aria-label="Mode tampilan">
+                <button type="button" class="view-toggle__btn is-active" data-view="grid" aria-label="Tampilan kartu"
+                    aria-pressed="true">
+                    <i class="fa-solid fa-table-cells-large" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="view-toggle__btn" data-view="list" aria-label="Tampilan daftar"
+                    aria-pressed="false">
+                    <i class="fa-solid fa-list" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Badge filter kategori -->
+        <div class="produk-filter" id="homeFilter" role="tablist" aria-label="Filter kategori">
+            <!-- Badge di-render oleh JS -->
+        </div>
     </div>
+
+    <!-- LIST PRODUK -->
+    <div class="produk-list is-grid" id="homeProdukList"></div>
+
+    <!-- Empty state -->
+    <div class="kategori-empty" id="homeEmpty" style="display:none">
+        <i class="fa-solid fa-box-open" aria-hidden="true"></i>
+        <p>Belum ada produk.</p>
+    </div>
+
 </section>
+
+<!-- ============================================
+     CART BAR (fixed di atas footer)
+     ============================================ -->
+<div class="cart-bar" id="cartBar" hidden>
+    <div class="cart-bar__info">
+        <span class="cart-bar__count" id="cartCount">0 item</span>
+        <span class="cart-bar__total" id="cartTotal">Rp 0</span>
+    </div>
+    <button type="button" class="cart-bar__btn" id="btnBayar">
+        <i class="fa-solid fa-cash-register" aria-hidden="true"></i>
+        Bayar
+    </button>
+</div>

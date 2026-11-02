@@ -5,7 +5,7 @@
    ============================================ */
 
 const PAGE_INIT = {
-    // home: initHome,
+    home: initHome,
     // order: initOrder,
     // riwayat: initRiwayat,
     setting: initSetting,

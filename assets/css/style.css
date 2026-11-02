@@ -1983,3 +1983,243 @@ body.img-preview-open {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+
+/* ============================================
+   HOME — PRODUK COUNTER (QTY STEPPER)
+   ============================================ */
+
+/* Container qty (bulat) */
+.qty-stepper {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+}
+
+.qty-stepper__btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    background-color: #f1f5f9;
+    color: var(--color-text);
+    transition: background-color var(--transition), transform var(--transition);
+    flex-shrink: 0;
+}
+
+.qty-stepper__btn:hover {
+    background-color: #e2e8f0;
+}
+
+.qty-stepper__btn:active {
+    transform: scale(0.92);
+}
+
+.qty-stepper__btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.qty-stepper__btn--plus {
+    background-color: var(--color-primary);
+    color: #ffffff;
+}
+
+.qty-stepper__btn--plus:hover {
+    background-color: #1d4ed8;
+}
+
+.qty-stepper__input {
+    width: 40px;
+    height: 28px;
+    text-align: center;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    outline: none;
+    padding: 0;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.qty-stepper__input::-webkit-outer-spin-button,
+.qty-stepper__input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.qty-stepper__input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+/* ============================================
+   HOME — MODE GRID: posisi qty stepper
+   ============================================ */
+.produk-list.is-grid .qty-stepper {
+    align-self: flex-start;
+}
+
+/* ============================================
+   HOME — MODE LIST: Penyesuaian Header Row
+   ============================================ */
+.produk-list.is-list .produk-card__header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 2px;
+}
+
+/* Memastikan nama produk bisa terpotong rapi (ellipsis) jika kepanjangan */
+.produk-list.is-list .produk-card__header-row .produk-card__name {
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Merapikan letak stepper di kanan */
+.produk-list.is-list .qty-stepper {
+    flex: 0 0 auto;
+    margin-left: 0;
+}
+
+/* Merapikan susunan teks di bawah judul */
+.produk-list.is-list .produk-card__body {
+    justify-content: center;
+    gap: 2px;
+}
+
+/* ============================================
+   PERBAIKAN MODE GRID: Counter di bawah harga
+   ============================================ */
+.produk-list.is-grid .produk-card__body {
+    display: flex;
+    flex-direction: column;
+    padding-right: 0;
+    /* Hapus padding kanan karena tidak ada tombol edit di home */
+}
+
+/* Kembalikan judul ke atas dan lepas dari flex-row */
+.produk-list.is-grid .produk-card__header-row {
+    display: contents;
+}
+
+/* Posisikan stepper di urutan paling bawah */
+.produk-list.is-grid .qty-stepper {
+    order: 99;
+    margin-top: 6px;
+    align-self: flex-start;
+}
+
+.produk-list.is-grid .produk-card__header-row .produk-card__name {
+    padding-right: 0;
+    /* Menyesuaikan padding action jika ada */
+}
+
+/* ============================================
+   CART BAR (fixed di atas footer nav)
+   ============================================ */
+.cart-bar {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: calc(var(--nav-height) + 10px + env(safe-area-inset-bottom, 0px));
+    z-index: 95;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px 10px 16px;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    animation: cartBarIn 0.25s ease;
+}
+
+@keyframes cartBarIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cart-bar[hidden] {
+    display: none;
+}
+
+.cart-bar__info {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.cart-bar__count {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    font-weight: 500;
+}
+
+.cart-bar__total {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-text);
+    line-height: 1.2;
+}
+
+.cart-bar__btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 44px;
+    padding: 0 18px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--color-primary), #1d4ed8);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.cart-bar__btn:hover {
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+}
+
+.cart-bar__btn:active {
+    transform: scale(0.96);
+}
+
+/* Saat cart bar tampil, tambah padding bawah produk list
+   supaya item terakhir tidak tertutup */
+.page--home.has-cart .produk-list {
+    padding-bottom: 140px;
+}
+
+/* Home: count sebagai elemen pertama page-header */
+.page--home .page-header__count {
+    margin: 0 0 4px;
+    font-size: 13px;
+    color: var(--color-text);
+    font-weight: 600;
+}
