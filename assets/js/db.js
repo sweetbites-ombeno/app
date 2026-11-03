@@ -8,14 +8,14 @@ db.version(1).stores({
     pembelian: 'id, kode, total, tempat, tanggal_beli, id_user, created_at, updated_at, deleted_at',
     pembelian_detail: 'id, pembelian, name_item, qty, satuan, harga_satuan, total, order, created_at, updated_at, deleted_at',
     penjualan: 'id, kode, total_bayar, uang_diterima, uang_kembalian, id_customer, name_customer, telp_customer, tanggal_jual, status, method_bayar, img_bayar_base64, id_user, created_at, updated_at, deleted_at',
-    penjualan_detail: 'id, penjualan, id_product, name_product, id_kategori, name_kategori, qty, harga_satuan, total, order, id_user, created_at, updated_at, deleted_at',
+    penjualan_detail: 'id, penjualan, id_product, name_product, id_kategori, name_kategori, qty, harga_satuan, total, order, created_at, updated_at, deleted_at',
     backup_db: 'id, tanggal, date_now, status, created_at, updated_at, deleted_at',
 });
 
 // penjelasan
 // status penjualan = (0 : menuggu pembayaran, 1 : lunas, 2:  simpan pesanan, 3:batal)
 // untuk id_customer, name_customer, telp_customer penjualan default cari dari customer yang namanya = 'Umum'
-// kode penjualan diisi dengan format S-username-tanggaljammenitdetik contoh 20261124191230
+// kode penjualan diisi dengan format S-username-tanggaljammenitdetik contoh S-admin-20261124191230
 // method_bayar = 'tunai', 'qris', 'transfer'
 
 // nanti buat skenario untuk penjualan online yang dimana nanti kode penjualan di gabungkan, nanti apabila ada kode yang sama jadi S-username-tanggaljammenitdetik-1 dan S-username-tanggaljammenitdetik-2

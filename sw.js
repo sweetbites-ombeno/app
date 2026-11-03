@@ -19,6 +19,7 @@ const PRECACHE_URLS = [
     './assets/js/pages/data-produk.js',
     './order-content.html',
     './assets/js/pages/order.js',
+    './assets/js/cart-db.js',
     // ... file JS halaman lainnya
 ];
 
