@@ -6,7 +6,7 @@
 
 const PAGE_INIT = {
     home: initHome,
-    // order: initOrder,
+    order: initOrder,
     // riwayat: initRiwayat,
     setting: initSetting,
     "data-kategori": initDataKategori,
@@ -154,6 +154,8 @@ async function navigateTo(page, opts = { pushState: true }) {
         // Jalankan JS khusus halaman (kalau ada)
         if (typeof PAGE_INIT[page] === "function") {
             await PAGE_INIT[page]();
+            // Update badge cart di footer
+            if (typeof updateNavCartBadge === "function") updateNavCartBadge();
         }
 
       // ⬇️⬇️ TRIGGER CEK BACKUP HARIAN ⬇️⬇️

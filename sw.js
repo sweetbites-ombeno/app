@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'pos-app-v1';
+const CACHE_NAME = 'pos-app-v2';
 const PRECACHE_URLS = [
     './',
     './app.html',
@@ -17,6 +17,8 @@ const PRECACHE_URLS = [
     './assets/js/pages/home.js',
     './assets/js/pages/setting.js',
     './assets/js/pages/data-produk.js',
+    './order-content.html',
+    './assets/js/pages/order.js',
     // ... file JS halaman lainnya
 ];
 

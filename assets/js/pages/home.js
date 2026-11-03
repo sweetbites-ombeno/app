@@ -9,6 +9,34 @@ let _homeView = "grid";
 let _homeFilterKategori = "";
 let _homeCart = {};   // { produk_id: qty }
 
+/* ---------- CART GLOBAL (dipakai Home & Order) ---------- */
+function getCart() {
+    try {
+        const raw = sessionStorage.getItem("cart");
+        return raw ? JSON.parse(raw) : {};
+    } catch (e) { return {}; }
+}
+function saveCart(cart) {
+    try { sessionStorage.setItem("cart", JSON.stringify(cart)); } catch (e) { }
+    updateNavCartBadge();
+}
+function updateNavCartBadge() {
+    const badge = document.getElementById("navCartBadge");
+    if (!badge) return;
+    const cart = getCart();
+    let total = 0;
+    Object.keys(cart).forEach(function (id) { total += cart[id] || 0; });
+    if (total > 0) {
+        badge.textContent = total > 99 ? "99+" : String(total);
+        badge.hidden = false;
+    } else {
+        badge.hidden = true;
+    }
+}
+window.getCart = getCart;
+window.saveCart = saveCart;
+window.updateNavCartBadge = updateNavCartBadge;
+
 /* ---------- View Toggle ---------- */
 function setHomeView(view) {
     _homeView = view === "list" ? "list" : "grid";
@@ -104,7 +132,6 @@ function renderHomeProdukList(filter = "") {
             <div class="produk-card" data-id="${p.id}">
                 <div class="produk-card__media">${imgHTML}</div>
                 <div class="produk-card__body">
-                    <!-- WRAPPER BARU: Judul & Stepper sejajar -->
                     <div class="produk-card__header-row">
                         <h3 class="produk-card__name">${nama}</h3>
                         
@@ -223,7 +250,8 @@ function setQty(id, qty) {
     if (qty === 0) delete _homeCart[id];
     else _homeCart[id] = qty;
 
-    // Update tampilan stepper tanpa re-render seluruh list
+    saveCart(_homeCart);
+
     const stepper = document.querySelector(`.qty-stepper[data-stepper-id="${id}"]`);
     if (stepper) {
         const input = stepper.querySelector(".qty-stepper__input");
@@ -240,20 +268,65 @@ function addQty(id, delta) {
     setQty(id, cur + delta);
 }
 
+/* ============================================
+   EVENT DELEGATION QTY — DIPASANG SEKALI DI DOCUMENT
+   (bukan di #homeProdukList yang dibuat ulang tiap navigasi)
+   ============================================ */
+if (!window._homeQtyBound) {
+    window._homeQtyBound = true;
+
+    document.addEventListener("click", function (e) {
+        // Hanya aktif saat halaman home
+        if (!document.querySelector(".page--home")) return;
+
+        const addBtn = e.target.closest("[data-action='home-add-qty']");
+        if (addBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            addQty(addBtn.dataset.id, 1);
+            return;
+        }
+        const decBtn = e.target.closest("[data-action='home-dec-qty']");
+        if (decBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            addQty(decBtn.dataset.id, -1);
+            return;
+        }
+    });
+
+    document.addEventListener("input", function (e) {
+        if (!document.querySelector(".page--home")) return;
+        const inp = e.target.closest("[data-action='home-qty-input']");
+        if (!inp) return;
+        const id = inp.dataset.id;
+        const val = parseInt(inp.value, 10);
+        if (isNaN(val)) return;
+        setQty(id, val);
+    });
+
+    document.addEventListener("blur", function (e) {
+        if (!document.querySelector(".page--home")) return;
+        const inp = e.target.closest("[data-action='home-qty-input']");
+        if (!inp) return;
+        const id = inp.dataset.id;
+        inp.value = _homeCart[id] || 0;
+    }, true);
+}
+
 /* ---------- Init ---------- */
 async function initHome() {
-    // Preferensi view
     try {
         const saved = localStorage.getItem("homeView");
         if (saved === "grid" || saved === "list") _homeView = saved;
     } catch (e) { }
 
-    // Reset state
-    _homeCart = {};
+    _homeCart = getCart();
     _homeFilterKategori = "";
 
     setHomeView(_homeView);
     await loadHomeFromDB();
+    updateNavCartBadge();
 
     // Search
     const search = document.getElementById("searchHome");
@@ -281,53 +354,19 @@ async function initHome() {
             _homeFilterKategori = val;
             renderHomeFilterBadges();
             const search = document.getElementById("searchHome");
-            renderHomeProdukList(search ? search.value : "");   // ← sebelumnya renderProdukList()
+            renderHomeProdukList(search ? search.value : "");
         });
     }
 
-    // Aksi qty (event delegation)
-    const listEl = document.getElementById("homeProdukList");
-    if (listEl) {
-        listEl.addEventListener("click", function (e) {
-            const addBtn = e.target.closest("[data-action='home-add-qty']");
-            if (addBtn) {
-                e.preventDefault();
-                addQty(addBtn.dataset.id, 1);
-                return;
-            }
-            const decBtn = e.target.closest("[data-action='home-dec-qty']");
-            if (decBtn) {
-                e.preventDefault();
-                addQty(decBtn.dataset.id, -1);
-                return;
-            }
-        });
-
-        // Input manual
-        listEl.addEventListener("input", function (e) {
-            const inp = e.target.closest("[data-action='home-qty-input']");
-            if (!inp) return;
-            const id = inp.dataset.id;
-            const val = parseInt(inp.value, 10);
-            if (isNaN(val)) return;
-            setQty(id, val);
-        });
-
-        // Enter / blur untuk normalize
-        listEl.addEventListener("blur", function (e) {
-            const inp = e.target.closest("[data-action='home-qty-input']");
-            if (!inp) return;
-            const id = inp.dataset.id;
-            const qty = _homeCart[id] || 0;
-            inp.value = qty;
-        }, true);
-    }
-
-    // Tombol Bayar (placeholder)
+    // Tombol Checkout
     const btnBayar = document.getElementById("btnBayar");
     if (btnBayar) {
         btnBayar.addEventListener("click", function () {
-            alert("Fitur bayar akan diimplementasikan di halaman Order.");
+            const cart = getCart();
+            let total = 0;
+            Object.keys(cart).forEach(function (id) { total += cart[id] || 0; });
+            if (total === 0) return;
+            navigateTo("order");
         });
     }
 }
