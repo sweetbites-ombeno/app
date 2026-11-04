@@ -2957,3 +2957,105 @@ body.modal-open {
         font-size: 20px;
     }
 }
+
+/* ============================================
+   HEADER ACTIONS (khusus halaman Order)
+   ============================================ */
+.app-header__actions {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    margin-right: 8px;
+}
+
+body.page-is-order .app-header__actions {
+    display: flex;
+}
+
+.app-header__action-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f1f5f9;
+    color: var(--color-text);
+    font-size: 13px;
+    transition: background-color var(--transition), color var(--transition),
+        transform var(--transition);
+}
+
+.app-header__action-btn:hover {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+.app-header__action-btn:active {
+    transform: scale(0.94);
+}
+
+.app-header__action-btn:focus-visible {
+    outline: 2px solid rgba(37, 99, 235, 0.35);
+    outline-offset: 1px;
+}
+
+/* Supaya judul & date tidak menabrak tombol di layar kecil */
+@media (max-width: 360px) {
+    .app-header__action-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
+    }
+
+    .app-header__actions {
+        gap: 4px;
+    }
+}
+
+/* ============================================
+   HEADER ACTIONS — Warna per tombol (khusus Order)
+   ============================================ */
+
+/* Tombol Simpan Pesanan → HIJAU */
+#btnSimpanPesanan {
+    background-color: #10b981;
+    color: #ffffff;
+}
+
+#btnSimpanPesanan:hover {
+    background-color: #059669;
+    color: #ffffff;
+}
+
+#btnSimpanPesanan:active {
+    transform: scale(0.94);
+    background-color: #047857;
+}
+
+#btnSimpanPesanan:focus-visible {
+    outline: 2px solid rgba(16, 185, 129, 0.45);
+    outline-offset: 1px;
+}
+
+/* Tombol List Pesanan → KUNING */
+#btnListPesanan {
+    background-color: #f59e0b;
+    color: #ffffff;
+}
+
+#btnListPesanan:hover {
+    background-color: #d97706;
+    color: #ffffff;
+}
+
+#btnListPesanan:active {
+    transform: scale(0.94);
+    background-color: #b45309;
+}
+
+#btnListPesanan:focus-visible {
+    outline: 2px solid rgba(245, 158, 11, 0.45);
+    outline-offset: 1px;
+}

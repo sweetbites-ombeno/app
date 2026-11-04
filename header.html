@@ -1,6 +1,18 @@
 <header class="app-header">
     <div class="app-header__inner">
         <h1 class="app-header__title" id="headerTitle">Mobile App</h1>
+
+        <!-- Tombol aksi khusus halaman Order (visibility diatur CSS via body.page-is-order) -->
+        <div class="app-header__actions" id="headerActions">
+            <button type="button" class="app-header__action-btn" id="btnListPesanan" aria-label="List Pesanan" title="List Pesanan">
+                <i class="fa-solid fa-list-ul" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="app-header__action-btn" id="btnSimpanPesanan" aria-label="Simpan Pesanan"
+                title="Simpan Pesanan">
+                <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+            </button>
+        </div>
+
         <div class="app-header__date" id="headerDate" aria-label="Tanggal hari ini"></div>
     </div>
 </header>

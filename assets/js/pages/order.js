@@ -284,6 +284,21 @@ async function initOrder() {
     await updateDraftMethod(_orderMethod);
   }
 
+  // Tombol header aksi Order (belum difungsikan)
+  const btnSimpan = document.getElementById("btnSimpanPesanan");
+  if (btnSimpan) {
+    btnSimpan.addEventListener("click", function () {
+      // TODO: logika simpan pesanan
+    });
+  }
+
+  const btnList = document.getElementById("btnListPesanan");
+  if (btnList) {
+    btnList.addEventListener("click", function () {
+      // TODO: logika list pesanan
+    });
+  }
+
   updateNavCartBadge();
 }
 

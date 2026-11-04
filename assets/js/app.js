@@ -166,6 +166,7 @@ async function navigateTo(page, opts = { pushState: true }) {
     } else {
       console.warn("[navigateTo] #headerTitle tidak ditemukan.");
     }
+    document.body.classList.toggle("page-is-order", page === "order");
 
     renderHeaderDate();
     setActiveNav(page);
