@@ -10,6 +10,22 @@ let _orderMethod = "tunai";
 let _orderTotal = 0;
 let _orderTotalItems = 0;
 
+/* ---------- Info customer+tanggal dari List Pesanan ----------
+   Disimpan juga di memori agar tetap tersedia meski _draftOrderKey berganti
+   (mis. saat cart habis lalu diisi ulang → draft baru dibuat).
+   ------------------------------------------------------------ */
+let _orderFromListInfo = null;
+
+/* ---------- Helper format tanggal ---------- */
+function _formatTanggalSingkatLocal(str) {
+  if (!str) return "-";
+  const d = new Date(str);
+  if (isNaN(d.getTime())) return "-";
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric", month: "short", year: "numeric"
+  }).format(d);
+}
+
 /* ---------- Render Items ---------- */
 function renderOrderItems() {
   const card = document.getElementById("orderItemsCard");
@@ -271,6 +287,52 @@ async function initOrder() {
 
   await loadOrderFromDB();
 
+  // ⬇️ Info dari List Pesanan
+  const infoRaw = sessionStorage.getItem("orderFromList");
+  if (infoRaw) {
+    try {
+      const info = JSON.parse(infoRaw);
+
+      // ⬇️ Guard: hanya tampilkan banner kalau cart memang berisi
+      const cartNow = getCart();
+      const totalCartNow = Object.keys(cartNow).reduce(function (s, k) {
+        return s + (cartNow[k] || 0);
+      }, 0);
+
+      if (totalCartNow > 0) {
+        _orderFromListInfo = info;   // simpan di memori (tahan meski draft ID berganti)
+
+        const infoEl = document.getElementById("orderInfoBanner");
+        if (infoEl) {
+          infoEl.hidden = false;
+          infoEl.innerHTML = `
+        <i class="fa-solid fa-receipt" aria-hidden="true"></i>
+        <div>
+          <strong>${escapeHTML(info.name_customer || "-")}</strong>
+          <span>${typeof _formatTanggalPesan === "function"
+              ? _formatTanggalPesan(info.tanggal_pesan)
+              : (info.tanggal_pesan || "-")}</span>
+        </div>`;
+        }
+      } else {
+        // Cart kosong → info dari list tidak relevan, bersihkan
+        _orderFromListInfo = null;
+        try {
+          sessionStorage.removeItem("orderFromList");
+          sessionStorage.removeItem("orderFromListOriginal");
+        } catch (e) { }
+        const infoEl = document.getElementById("orderInfoBanner");
+        if (infoEl) {
+          infoEl.hidden = true;
+          infoEl.innerHTML = "";
+        }
+      }
+    } catch (e) {
+      console.warn("[order] Gagal parse orderFromList:", e);
+    }
+    // Jangan hapus session sampai user simpan/bayar
+  }
+
   _orderCart = getCart();
   if (typeof syncCartToDB === "function") {
     try {
@@ -284,7 +346,7 @@ async function initOrder() {
     await updateDraftMethod(_orderMethod);
   }
 
-  // Tombol header aksi Order
+  // Tombol header aksi Order — Simpan Pesanan
   const btnSimpan = document.getElementById("btnSimpanPesanan");
   if (btnSimpan && !btnSimpan._boundSave) {
     btnSimpan._boundSave = true;
@@ -304,14 +366,62 @@ async function initOrder() {
         return;
       }
 
+      // ⬇️ Pastikan default customer+tanggal dari List Pesanan tetap terbawa,
+      // meski draft ID sempat berubah karena syncCartToDB (mis. cart diedit ulang).
+      if (_orderFromListInfo && !sessionStorage.getItem("orderFromListOriginal")) {
+        try {
+          const draftIdNow = sessionStorage.getItem(_draftOrderKey());
+          if (draftIdNow) {
+            sessionStorage.setItem("orderFromListOriginal", JSON.stringify({
+              id: draftIdNow,
+              id_customer: _orderFromListInfo.id_customer || "",
+              name_customer: _orderFromListInfo.name_customer || "",
+              telp_customer: _orderFromListInfo.telp_customer || "-",
+              tanggal_pesan: _orderFromListInfo.tanggal_pesan || ""
+            }));
+          }
+        } catch (e) { }
+      }
+
       openSaveOrderPopup();
     });
   }
 
+  // Tombol header aksi Order — List Pesanan
   const btnList = document.getElementById("btnListPesanan");
-  if (btnList) {
+  if (btnList && !btnList._boundList) {
+    btnList._boundList = true;
     btnList.addEventListener("click", function () {
-      // TODO: logika list pesanan
+      const cart = getCart();
+      const totalItems = Object.keys(cart).reduce(function (s, id) {
+        return s + (cart[id] || 0);
+      }, 0);
+
+      if (totalItems > 0) {
+        // ⬇️ Popup konfirmasi custom (ganti confirm bawaan browser)
+        if (typeof openConfirmSimpanPesanan === "function") {
+          openConfirmSimpanPesanan(
+            function onYes() {
+              // Iya → buka popup simpan pesanan
+              if (typeof openSaveOrderPopup === "function") {
+                openSaveOrderPopup({ from: "order" });
+              }
+            },
+            function onNo() {
+              // Batal → tidak melakukan apa-apa (tetap di halaman Order)
+            }
+          );
+        } else {
+          // Fallback kalau openConfirmSimpanPesanan tidak tersedia
+          if (confirm("Apakah Pesanan akan di simpan?")) {
+            openSaveOrderPopup({ from: "order" });
+          }
+        }
+        return;
+      }
+
+      // Cart kosong → langsung ke list pesanan
+      navigateTo("data-list-pesanan");
     });
   }
 
@@ -597,6 +707,18 @@ async function processPayment(opts) {
     _orderCart = {};
     saveCart({});
 
+    // ⬇️ Bersihkan info "datang dari List Pesanan" setelah pembayaran lunas
+    if (typeof _clearOrderFromListSession === "function") {
+      _clearOrderFromListSession();
+    }
+    try {
+      sessionStorage.removeItem("orderFromListOriginal");
+      sessionStorage.removeItem("orderFromList");
+    } catch (e) { }
+
+    // Reset info di memori juga
+    _orderFromListInfo = null;
+
     openSuccessPopup(successData);
 
   } catch (err) {
@@ -685,6 +807,7 @@ function openSuccessPopup(data) {
     overlay.remove();
     document.body.classList.remove("modal-open");
     updateNavCartBadge();
+    _orderFromListInfo = null;   // ⬅️ reset memori
     navigateTo("home");
   });
 }

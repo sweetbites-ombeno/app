@@ -7,6 +7,7 @@
 const PAGE_INIT = {
   home: initHome,
   order: initOrder,
+  "data-list-pesanan": initDataListPesanan,
   // riwayat: initRiwayat,
   setting: initSetting,
   "data-kategori": initDataKategori,
@@ -45,6 +46,25 @@ async function logout() {
     } catch (e) { }
   }
 
+  // ⬇️ Bersihkan info "datang dari List Pesanan" yang tidak ber-prefix userId
+  try {
+    if (typeof _clearOrderFromListSession === "function") {
+      _clearOrderFromListSession();
+    } else {
+      sessionStorage.removeItem("orderFromList");
+      sessionStorage.removeItem("orderFromListOriginal");
+    }
+  } catch (e) { }
+
+  // ⬇️ Reset juga flag di memori order.js (kalau sedang aktif di tab yang sama)
+  try {
+    if (typeof window !== "undefined" && "_orderFromListInfo" in window) {
+      // tidak bisa assign langsung ke `let` yang di-scope module,
+      // tapi kita bisa set null via helper kalau ada. Kalau tidak, cukup
+      // andalkan reset dari initOrder saat halaman baru dimuat.
+    }
+  } catch (e) { }
+
   sessionStorage.removeItem("login");
   location.replace(HALAMAN_LOGIN);
 }
@@ -54,8 +74,22 @@ function bindLogout() {
     const el = e.target.closest("[data-action='logout']");
     if (!el) return;
     e.preventDefault();
-    if (confirm("Keluar dari aplikasi?")) {
-      logout();
+
+    // ⬇️ Popup konfirmasi custom (ganti confirm bawaan browser)
+    if (typeof openConfirmLogout === "function") {
+      openConfirmLogout(
+        function onYes() {
+          logout();
+        },
+        function onNo() {
+          // Batal → tidak melakukan apa-apa
+        }
+      );
+    } else {
+      // Fallback kalau openConfirmLogout tidak tersedia
+      if (confirm("Keluar dari aplikasi?")) {
+        logout();
+      }
     }
   });
 }
@@ -71,6 +105,7 @@ const PAGE_TITLES = {
   "data-customer-form": "Form Customer - Mobile App",
   "data-produk": "Data Produk - Mobile App",
   "data-produk-form": "Form Produk - Mobile App",
+  "data-list-pesanan": "List Pesanan - Mobile App",
 };
 
 async function muat(id, file) {
@@ -143,7 +178,8 @@ async function navigateTo(page, opts = { pushState: true }) {
       "data-customer",
       "data-customer-form",
       "data-produk",
-      "data-produk-form"
+      "data-produk-form",
+      "data-list-pesanan"   // ← baru
     ];
     document.body.classList.toggle(
       "hide-app-chrome",

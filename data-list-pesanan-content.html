@@ -1,0 +1,63 @@
+<section class="page page--list-pesanan">
+
+    <!-- ============================================
+         HEADER CUSTOM (sticky, tidak ikut scroll)
+         ============================================ -->
+    <div class="page-header">
+        <div class="page-header__top">
+            <a href="app.html?page=order" class="page-header__btn" aria-label="Kembali">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+            </a>
+
+            <div class="page-header__title-wrap">
+                <h1 class="page-header__title">List Pesanan</h1>
+                <p class="page-header__subtitle">Pesanan yang ditunda pembayarannya</p>
+            </div>
+
+            <span class="page-header__spacer" aria-hidden="true"></span>
+        </div>
+
+        <!-- Search Customer -->
+        <div class="page-header__search">
+            <i class="fa-solid fa-magnifying-glass page-header__search-icon" aria-hidden="true"></i>
+            <input type="search" id="searchListCustomer" placeholder="Cari customer" autocomplete="off">
+        </div>
+
+        <!-- Search Tanggal -->
+        <div class="page-header__search">
+            <i class="fa-regular fa-calendar page-header__search-icon" aria-hidden="true"></i>
+            <input type="date" id="searchListTanggal" aria-label="Cari tanggal pesanan">
+        </div>
+
+        <!-- Badge Sort -->
+        <div class="produk-filter" role="tablist" aria-label="Urutkan pesanan">
+            <button type="button" class="produk-filter__badge is-active" data-sort-pesanan="dekat" role="tab"
+                aria-selected="true">
+                Dari Terdekat
+            </button>
+            <button type="button" class="produk-filter__badge" data-sort-pesanan="jauh" role="tab" aria-selected="false">
+                Dari Terjauh
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================
+         SUMMARY CARD
+         ============================================ -->
+    <div class="lp-summary" id="listPesananSummary">
+        <i class="fa-solid fa-receipt" aria-hidden="true"></i>
+        <span>Memuat...</span>
+    </div>
+
+    <!-- ============================================
+         LIST CARD
+         ============================================ -->
+    <div id="listPesananCards"></div>
+
+    <!-- Empty state -->
+    <div class="kategori-empty" id="listPesananEmpty" style="display:none">
+        <i class="fa-solid fa-receipt" aria-hidden="true"></i>
+        <p>Belum ada pesanan yang ditunda.</p>
+    </div>
+
+</section>
