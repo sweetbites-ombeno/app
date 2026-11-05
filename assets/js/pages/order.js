@@ -284,11 +284,27 @@ async function initOrder() {
     await updateDraftMethod(_orderMethod);
   }
 
-  // Tombol header aksi Order (belum difungsikan)
+  // Tombol header aksi Order
   const btnSimpan = document.getElementById("btnSimpanPesanan");
-  if (btnSimpan) {
+  if (btnSimpan && !btnSimpan._boundSave) {
+    btnSimpan._boundSave = true;
     btnSimpan.addEventListener("click", function () {
-      // TODO: logika simpan pesanan
+      const cart = getCart();
+      const totalItems = Object.keys(cart).reduce(function (s, id) {
+        return s + (cart[id] || 0);
+      }, 0);
+
+      if (totalItems === 0) {
+        alert("Keranjang kosong. Tambahkan produk dulu sebelum menyimpan pesanan.");
+        return;
+      }
+
+      if (typeof openSaveOrderPopup !== "function") {
+        alert("Fitur simpan pesanan belum siap. Muat ulang halaman.");
+        return;
+      }
+
+      openSaveOrderPopup();
     });
   }
 

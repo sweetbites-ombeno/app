@@ -3059,3 +3059,82 @@ body.page-is-order .app-header__actions {
     outline: 2px solid rgba(245, 158, 11, 0.45);
     outline-offset: 1px;
 }
+
+
+/* ============================================
+   SIMPAN PESANAN — summary card & sukses
+   ============================================ */
+.save-order-summary {
+    background-color: #f8fafc;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.save-order-summary__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 13.5px;
+}
+
+.save-order-summary__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-text-muted);
+    font-weight: 500;
+}
+
+.save-order-summary__label i {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.save-order-summary__value {
+    color: var(--color-text);
+    font-weight: 600;
+    text-align: right;
+}
+
+.save-order-summary__value--total {
+    color: #059669;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.save-order-error {
+    min-height: 1.1em;
+    font-size: 12.5px;
+    color: #dc2626;
+    text-align: left;
+    margin: 4px 0 0;
+    padding-left: 2px;
+}
+
+.save-order-success__icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+    font-size: 24px;
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+}
+
+.save-order-success__text {
+    font-size: 13.5px;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    text-align: center;
+    margin-bottom: 6px;
+}

@@ -106,7 +106,8 @@ async function getOrCreateDraftPenjualan() {
     id_customer: customer.id,
     name_customer: customer.name,
     telp_customer: customer.no_telp || "-",
-    tanggal_jual: now,
+    tanggal_jual: "",        // ← kosong sampai lunas (status 1)
+    tanggal_pesan: "",       // ← kosong sampai simpan pesanan (status 2)
     status: 0,
     method_bayar: "tunai",
     img_bayar_base64: "",
