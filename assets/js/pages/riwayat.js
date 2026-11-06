@@ -9,6 +9,21 @@ let _riwayatTanggalAwal = "";
 let _riwayatTanggalAkhir = "";
 let _riwayatExpanded = {};
 
+/* ---------- Helper: update label badge Pilih Tanggal ---------- */
+function _updateBadgePilihTanggal() {
+    const badge = document.getElementById("badgePilihTanggal");
+    if (!badge) return;
+
+    // Kalau filter aktif adalah custom DAN ada rentang → tampilkan rentang
+    if (_riwayatFilter === "custom" && _riwayatTanggalAwal && _riwayatTanggalAkhir) {
+        const awal = _formatTanggalRingkas(_riwayatTanggalAwal);
+        const akhir = _formatTanggalRingkas(_riwayatTanggalAkhir);
+        badge.textContent = `${awal} - ${akhir}`;
+    } else {
+        badge.textContent = "Pilih Tanggal";
+    }
+}
+
 /* ---------- Helper tanggal ---------- */
 function _pad2(n) { return String(n).padStart(2, "0"); }
 
@@ -284,6 +299,7 @@ if (!window._riwayatBound) {
 
             _riwayatFilter = val;
             _setActiveBadge(val);
+            _updateBadgePilihTanggal();   // ← tambah
             _renderRiwayat();
             return;
         }
@@ -295,6 +311,7 @@ if (!window._riwayatBound) {
             // Batal → kembalikan ke default hari ini
             _riwayatFilter = "hari-ini";
             _setActiveBadge("hari-ini");
+            _updateBadgePilihTanggal();
             _renderRiwayat();
             return;
         }
@@ -321,6 +338,7 @@ if (!window._riwayatBound) {
             _riwayatTanggalAwal = awal;
             _riwayatTanggalAkhir = akhir;
             _setActiveBadge("pilih-tanggal");
+            _updateBadgePilihTanggal();   // ← tambah
             _closeTanggalModal();
             _renderRiwayat();
             return;
@@ -332,6 +350,7 @@ if (!window._riwayatBound) {
             _closeTanggalModal();
             _riwayatFilter = "hari-ini";
             _setActiveBadge("hari-ini");
+            _updateBadgePilihTanggal();
             _renderRiwayat();
         }
     });
@@ -345,6 +364,7 @@ async function initRiwayat() {
     _riwayatExpanded = {};
 
     _setActiveBadge("hari-ini");
+    _updateBadgePilihTanggal();   // ← tambah
     _riwayatCache = await _loadRiwayat();
     _renderRiwayat();
 

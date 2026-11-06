@@ -3455,34 +3455,63 @@ body.page-is-order .app-header__actions {
 /* Summary card — di dalam header, jadi dibuat compact & menyatu */
 .riwayat-summary {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: 12px 14px;
-    background-color: #f8fafc;
-    border: 1px solid var(--color-border);
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 12px;
+    /* ⬇️ Background hijau (gradien senada dengan detail-status-card) */
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: 1px solid #059669;
     border-radius: var(--radius-md);
     margin-top: 2px;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.riwayat-summary__left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 .riwayat-summary__label {
-    font-size: 11.5px;
+    font-size: 10.5px;
     font-weight: 600;
-    color: var(--color-text-muted);
+    /* ⬇️ Teks jadi putih transparan agar kontras di background hijau */
+    color: rgba(255, 255, 255, 0.9);
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    min-width: 0;
 }
 
 .riwayat-summary__count {
+    display: block;
     font-size: 11.5px;
-    color: var(--color-text-muted);
+    /* ⬇️ Putih transparan */
+    color: rgba(255, 255, 255, 0.85);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .riwayat-summary__total {
-    font-size: 20px;
+    flex-shrink: 0;
+    font-size: 15px;
     font-weight: 700;
-    color: #059669;
-    margin-top: 2px;
+    /* ⬇️ Putih solid agar menonjol */
+    color: #ffffff;
+    text-align: right;
+    white-space: nowrap;
     line-height: 1.2;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 /* Group tanggal */
@@ -3625,17 +3654,17 @@ body.page-is-order .app-header__actions {
 }
 
 @media (max-width: 340px) {
-    .riwayat-filter__badge {
-        padding: 0 10px;
-        font-size: 11.5px;
-    }
-
     .riwayat-summary {
         padding: 10px 12px;
+        gap: 8px;
+    }
+
+    .riwayat-summary__label {
+        font-size: 10.5px;
     }
 
     .riwayat-summary__total {
-        font-size: 18px;
+        font-size: 14px;
     }
 }
 
