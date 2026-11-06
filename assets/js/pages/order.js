@@ -526,7 +526,11 @@ function openTunaiPopup() {
   overlay.querySelector("#btnTunaiConfirm").addEventListener("click", function () {
     const diterima = parseNum(inputDiterima.value);
     if (diterima < _orderTotal) {
-      alert("Uang diterima kurang dari total tagihan.");
+      openInfoPopup("Uang diterima kurang dari total tagihan.", {
+        title: "Uang Tidak Cukup",
+        icon: "warning",
+        button: "Mengerti"
+      });
       return;
     }
     const kembalian = diterima - _orderTotal;

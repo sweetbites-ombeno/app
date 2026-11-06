@@ -3870,3 +3870,88 @@ body.page-is-order .app-header__actions {
         height: 44px;
     }
 }
+
+/* ============================================
+   INFO POPUP (pengganti alert())
+   ============================================ */
+.info-popup {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: rgba(15, 23, 42, 0.65);
+    animation: fadeInOpacity 0.2s ease;
+}
+
+.info-popup__box {
+    width: 100%;
+    max-width: 340px;
+    background-color: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: 24px 20px 18px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    animation: modalBoxIn 0.25s ease;
+}
+
+.info-popup__icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 22px;
+}
+
+.info-popup__icon--warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35);
+}
+
+.info-popup__icon--danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
+}
+
+.info-popup__icon--info {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
+}
+
+.info-popup__icon--success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+}
+
+.info-popup__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 6px;
+}
+
+.info-popup__text {
+    font-size: 13.5px;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    margin-bottom: 18px;
+}
+
+.info-popup__actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.info-popup__actions .btn-primary {
+    flex: 1 1 0;
+    height: 46px;
+    margin-top: 0;
+    font-size: 14px;
+}

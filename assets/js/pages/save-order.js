@@ -700,9 +700,82 @@ function openConfirmLogout(onYes, onNo) {
   document.addEventListener("keydown", onKey);
 }
 
+/**
+ * Popup info umum (pengganti alert()).
+ *
+ * @param {string} text        - Pesan yang ditampilkan
+ * @param {object} [opts]
+ * @param {string} [opts.title]   - Judul popup (default: "Perhatian")
+ * @param {string} [opts.icon]    - "warning" | "danger" | "info" | "success" (default: "warning")
+ * @param {string} [opts.button]  - Label tombol (default: "Mengerti")
+ * @param {Function} [opts.onClose] - Callback saat popup ditutup
+ */
+function openInfoPopup(text, opts) {
+  opts = opts || {};
+  const title = opts.title || "Perhatian";
+  const icon = opts.icon || "warning";
+  const buttonLabel = opts.button || "Mengerti";
+
+  // Guard: jangan dobel popup
+  if (document.getElementById("infoPopup")) return;
+
+  const iconMap = {
+    warning: "fa-triangle-exclamation",
+    danger: "fa-circle-exclamation",
+    info: "fa-circle-info",
+    success: "fa-circle-check"
+  };
+  const iconClass = iconMap[icon] || iconMap.warning;
+
+  const overlay = document.createElement("div");
+  overlay.className = "info-popup";
+  overlay.id = "infoPopup";
+  overlay.innerHTML = `
+    <div class="info-popup__box">
+      <div class="info-popup__icon info-popup__icon--${escapeHTML(icon)}">
+        <i class="fa-solid ${iconClass}" aria-hidden="true"></i>
+      </div>
+      <h2 class="info-popup__title">${escapeHTML(title)}</h2>
+      <p class="info-popup__text">${escapeHTML(text)}</p>
+      <div class="info-popup__actions">
+        <button type="button" class="btn-primary" id="btnInfoOk">
+          ${escapeHTML(buttonLabel)}
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.classList.add("modal-open");
+
+  function close() {
+    overlay.remove();
+    document.body.classList.remove("modal-open");
+    if (typeof opts.onClose === "function") opts.onClose();
+  }
+
+  overlay.querySelector("#btnInfoOk").addEventListener("click", close);
+
+  // Klik backdrop → tutup
+  overlay.addEventListener("click", function (e) {
+    if (e.target === overlay) close();
+  });
+
+  // ESC → tutup
+  function onKey(e) {
+    if (e.key === "Escape") {
+      document.removeEventListener("keydown", onKey);
+      close();
+    }
+  }
+  document.addEventListener("keydown", onKey);
+}
+
+
 
 /* ---------- Expose global ---------- */
 window.openSaveOrderPopup = openSaveOrderPopup;
 window._clearOrderFromListSession = _clearOrderFromListSession;
 window.openConfirmSimpanPesanan = openConfirmSimpanPesanan;
 window.openConfirmLogout = openConfirmLogout;
+window.openInfoPopup = openInfoPopup;
