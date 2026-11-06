@@ -1,0 +1,89 @@
+<section class="page page--detail-transaksi">
+
+    <!-- ============================================
+         HEADER CUSTOM (back + judul + kode)
+         ============================================ -->
+    <div class="page-header page-header--simple">
+        <div class="page-header__top">
+            <a href="app.html?page=riwayat" class="page-header__btn" id="btnBackDetail" aria-label="Kembali">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+            </a>
+
+            <div class="page-header__title-wrap">
+                <h1 class="page-header__title">Detail Transaksi</h1>
+                <p class="page-header__subtitle" id="detailKode">-</p>
+            </div>
+
+            <span class="page-header__spacer" aria-hidden="true"></span>
+        </div>
+    </div>
+
+    <!-- ============================================
+         CARD STATUS LUNAS
+         ============================================ -->
+    <div class="detail-status-card" id="detailStatusCard">
+        <div class="detail-status-card__left">
+            <div class="detail-status-card__icon">
+                <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+            </div>
+            <div class="detail-status-card__text">
+                <span class="detail-status-card__title">Pembayaran Lunas</span>
+                <span class="detail-status-card__date" id="detailTanggal">-</span>
+            </div>
+        </div>
+        <span class="detail-status-card__total" id="detailTotal">Rp 0</span>
+    </div>
+
+    <!-- ============================================
+         INFO ORDER
+         ============================================ -->
+    <h2 class="detail-section-title">Info Order</h2>
+    <div class="detail-info-card" id="detailInfoCard">
+        <div class="detail-row">
+            <span class="detail-row__label">Nama Pelanggan</span>
+            <span class="detail-row__value" id="detailCustomer">-</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-row__label">No. Telp</span>
+            <span class="detail-row__value" id="detailTelp">-</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-row__label">Metode Pembayaran</span>
+            <span class="detail-row__value" id="detailMethod">-</span>
+        </div>
+    </div>
+
+    <!-- ============================================
+         ITEM
+         ============================================ -->
+    <h2 class="detail-section-title" id="detailItemTitle">Item (0)</h2>
+    <div class="detail-items-card" id="detailItemsCard"></div>
+
+    <!-- ============================================
+         RINCIAN BIAYA
+         ============================================ -->
+    <h2 class="detail-section-title">Rincian</h2>
+    <div class="detail-info-card" id="detailRincianCard">
+        <div class="detail-row">
+            <span class="detail-row__label">Total</span>
+            <span class="detail-row__value detail-row__value--total" id="detailRincianTotal">Rp 0</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-row__label">Uang Diterima</span>
+            <span class="detail-row__value" id="detailRincianDiterima">Rp 0</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-row__label">Kembalian</span>
+            <span class="detail-row__value" id="detailRincianKembalian">Rp 0</span>
+        </div>
+    </div>
+
+    <!-- ============================================
+         TOMBOL CETAK
+         ============================================ -->
+    <button type="button" class="btn-primary detail-cetak-btn" id="btnCetakStruk">
+        <i class="fa-solid fa-print" aria-hidden="true"></i>
+        Cetak Struk
+    </button>
+
+</section>

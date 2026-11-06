@@ -1,7 +1,94 @@
 <section class="page page--riwayat">
-    <div class="page__placeholder">
-        <i class="fa-solid fa-clock-rotate-left page__placeholder-icon"></i>
-        <h2 class="page__placeholder-title">Riwayat</h2>
-        <p class="page__placeholder-text">Halaman riwayat siap diisi konten.</p>
+
+    <!-- ============================================
+         HEADER FILTER + SUMMARY
+         ============================================ -->
+    <div class="page-header page-header--riwayat">
+        <!-- Baris 1: judul + refresh -->
+        <div class="page-header__top">
+            <div class="page-header__title-wrap">
+                <h1 class="page-header__title">Riwayat Transaksi</h1>
+                <p class="page-header__subtitle">Data penjualan yang sudah lunas</p>
+            </div>
+            <button type="button" class="page-header__btn" id="btnRefreshRiwayat" aria-label="Muat ulang">
+                <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <!-- Baris 2: badge filter -->
+        <div class="riwayat-filter" id="riwayatFilter" role="tablist" aria-label="Filter riwayat">
+            <button type="button" class="riwayat-filter__badge is-active" data-filter="hari-ini" role="tab"
+                aria-selected="true">
+                Hari ini
+            </button>
+            <button type="button" class="riwayat-filter__badge" data-filter="minggu-ini" role="tab"
+                aria-selected="false">
+                Minggu ini
+            </button>
+            <button type="button" class="riwayat-filter__badge" data-filter="bulan-ini" role="tab"
+                aria-selected="false">
+                Bulan ini
+            </button>
+            <button type="button" class="riwayat-filter__badge" data-filter="pilih-tanggal" role="tab"
+                aria-selected="false">
+                Pilih Tanggal
+            </button>
+        </div>
+
+        <!-- Baris 3: SUMMARY CARD (di dalam header) -->
+        <div class="riwayat-summary" id="riwayatSummary">
+            <span class="riwayat-summary__label" id="riwayatSummaryLabel">Pendapatan Hari ini</span>
+            <span class="riwayat-summary__count" id="riwayatSummaryCount">Ada 0 transaksi</span>
+            <span class="riwayat-summary__total" id="riwayatSummaryTotal">Rp 0</span>
+        </div>
     </div>
+
+    <!-- ============================================
+         LIST TRANSAKSI
+         ============================================ -->
+    <div class="riwayat-list" id="riwayatList"></div>
+
+    <!-- Empty state -->
+    <div class="kategori-empty" id="riwayatEmpty" style="display:none">
+        <i class="fa-solid fa-receipt" aria-hidden="true"></i>
+        <p>Belum ada transaksi.</p>
+    </div>
+
 </section>
+
+<!-- ============================================
+     POPUP PILIH TANGGAL
+     ============================================ -->
+<div class="pay-modal" id="riwayatTanggalModal" hidden>
+    <div class="pay-modal__box">
+        <h2 class="pay-modal__title">Pilih Tanggal Penjualan</h2>
+
+        <div class="form-group" style="text-align:left">
+            <label for="riwayatTanggalAwal">Tanggal Awal</label>
+            <div class="form-group__input">
+                <i class="fa-regular fa-calendar form-group__icon" aria-hidden="true"></i>
+                <input type="date" id="riwayatTanggalAwal" name="riwayatTanggalAwal">
+            </div>
+        </div>
+
+        <div class="form-group" style="text-align:left">
+            <label for="riwayatTanggalAkhir">Tanggal Akhir</label>
+            <div class="form-group__input">
+                <i class="fa-regular fa-calendar form-group__icon" aria-hidden="true"></i>
+                <input type="date" id="riwayatTanggalAkhir" name="riwayatTanggalAkhir">
+            </div>
+        </div>
+
+        <p class="save-order-error" id="riwayatTanggalError" role="alert"></p>
+
+        <div class="pay-modal__actions">
+            <button type="button" class="btn-secondary" id="btnRiwayatTanggalBatal">
+                Batal
+            </button>
+            <button type="button" class="btn-primary" id="btnRiwayatTanggalTerapkan">
+                <i class="fa-solid fa-check" aria-hidden="true"></i>
+                Terapkan
+            </button>
+        </div>
+    </div>
+</div>

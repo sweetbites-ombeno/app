@@ -3383,3 +3383,490 @@ body.page-is-order .app-header__actions {
     font-size: 12px;
     color: #3b82f6;
 }
+
+/* ============================================
+   RIWAYAT TRANSAKSI
+   ============================================ */
+.page--riwayat {
+    animation: fadeInOpacity 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Header filter */
+.page-header--riwayat .page-header__top {
+    margin-bottom: 4px;
+}
+
+.riwayat-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 2px 0;
+}
+
+.riwayat-filter__badge {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background-color: #f1f5f9;
+    color: var(--color-text-muted);
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    transition: background-color var(--transition), color var(--transition),
+        border-color var(--transition), transform var(--transition);
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.riwayat-filter__badge:hover {
+    background-color: #e2e8f0;
+    color: var(--color-text);
+}
+
+.riwayat-filter__badge:active {
+    transform: scale(0.96);
+}
+
+.riwayat-filter__badge.is-active {
+    background-color: var(--color-primary);
+    color: #ffffff;
+    border-color: var(--color-primary);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+
+.riwayat-filter__badge.is-active:hover {
+    background-color: #1d4ed8;
+    color: #ffffff;
+}
+
+.riwayat-filter__badge:focus-visible {
+    outline: 2px solid rgba(37, 99, 235, 0.35);
+    outline-offset: 1px;
+}
+
+/* Summary card — di dalam header, jadi dibuat compact & menyatu */
+.riwayat-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 14px;
+    background-color: #f8fafc;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    margin-top: 2px;
+}
+
+.riwayat-summary__label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.riwayat-summary__count {
+    font-size: 11.5px;
+    color: var(--color-text-muted);
+}
+
+.riwayat-summary__total {
+    font-size: 20px;
+    font-weight: 700;
+    color: #059669;
+    margin-top: 2px;
+    line-height: 1.2;
+}
+
+/* Group tanggal */
+.riwayat-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.riwayat-group__title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-transform: capitalize;
+    padding: 4px 2px 0;
+    letter-spacing: 0.01em;
+}
+
+/* Card transaksi */
+.riwayat-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: box-shadow var(--transition), border-color var(--transition);
+}
+
+.riwayat-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.riwayat-card__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    text-align: left;
+}
+
+.riwayat-card__icon {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    color: #ffffff;
+}
+
+.riwayat-card__icon--tunai {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.riwayat-card__icon--qris {
+    background: linear-gradient(135deg, #a855f7, #7c3aed);
+}
+
+.riwayat-card__icon--transfer {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.riwayat-card__info {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.riwayat-card__kode {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.riwayat-card__tanggal {
+    font-size: 11.5px;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.riwayat-card__items {
+    font-size: 11.5px;
+    color: var(--color-text-muted);
+}
+
+.riwayat-card__right {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.riwayat-card__total {
+    font-size: 14px;
+    font-weight: 700;
+    color: #059669;
+}
+
+.riwayat-card__chevron {
+    font-size: 11px;
+    color: #cbd5e1;
+    transition: transform var(--transition);
+}
+
+.riwayat-card.is-open .riwayat-card__chevron {
+    transform: rotate(180deg);
+}
+
+.riwayat-card__body {
+    border-top: 1px solid var(--color-border);
+    padding: 12px 14px 14px;
+}
+
+.riwayat-card__body[hidden] {
+    display: none;
+}
+
+.riwayat-card__actions {
+    display: flex;
+    gap: 8px;
+}
+
+.riwayat-card__actions .btn-primary,
+.riwayat-card__actions .btn-secondary {
+    flex: 1 1 0;
+    height: 42px;
+    margin-top: 0;
+    font-size: 13.5px;
+}
+
+@media (max-width: 340px) {
+    .riwayat-filter__badge {
+        padding: 0 10px;
+        font-size: 11.5px;
+    }
+
+    .riwayat-summary {
+        padding: 10px 12px;
+    }
+
+    .riwayat-summary__total {
+        font-size: 18px;
+    }
+}
+
+/* ============================================
+   DETAIL TRANSAKSI
+   ============================================ */
+.page--detail-transaksi {
+    animation: fadeInOpacity 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Card status lunas (hijau) */
+.detail-status-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-radius: var(--radius-md);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    margin-top: 4px;
+}
+
+.detail-status-card__left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.detail-status-card__icon {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.detail-status-card__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.detail-status-card__title {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.detail-status-card__date {
+    font-size: 11.5px;
+    opacity: 0.92;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.detail-status-card__total {
+    flex-shrink: 0;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* Section title */
+.detail-section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 8px 2px 0;
+    letter-spacing: 0.01em;
+}
+
+/* Card info / rincian (label kiri, value kanan) */
+.detail-info-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.detail-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13.5px;
+}
+
+.detail-row__label {
+    color: var(--color-text-muted);
+    font-weight: 500;
+    flex-shrink: 0;
+    max-width: 55%;
+}
+
+.detail-row__value {
+    color: var(--color-text);
+    font-weight: 600;
+    text-align: right;
+    word-break: break-word;
+    min-width: 0;
+}
+
+.detail-row__value--total {
+    color: #059669;
+    font-weight: 700;
+}
+
+/* Card item */
+.detail-items-card {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-item__img {
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    object-fit: cover;
+    background-color: #f1f5f9;
+}
+
+.detail-item__img--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #cbd5e1;
+}
+
+.detail-item__body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.detail-item__name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--color-text);
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.detail-item__qty {
+    font-size: 11.5px;
+    color: var(--color-text-muted);
+}
+
+.detail-item__subtotal {
+    flex-shrink: 0;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #059669;
+    white-space: nowrap;
+}
+
+.detail-empty {
+    padding: 20px 14px;
+    font-size: 12.5px;
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+/* Tombol cetak */
+.detail-cetak-btn {
+    margin-top: 12px;
+    margin-bottom: 8px;
+}
+
+@media (max-width: 340px) {
+    .detail-status-card {
+        padding: 12px 14px;
+        gap: 8px;
+    }
+
+    .detail-status-card__icon {
+        width: 36px;
+        height: 36px;
+        font-size: 17px;
+    }
+
+    .detail-status-card__title {
+        font-size: 13px;
+    }
+
+    .detail-status-card__total {
+        font-size: 14px;
+    }
+
+    .detail-item__img {
+        width: 44px;
+        height: 44px;
+    }
+}

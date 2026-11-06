@@ -8,7 +8,8 @@ const PAGE_INIT = {
   home: initHome,
   order: initOrder,
   "data-list-pesanan": initDataListPesanan,
-  // riwayat: initRiwayat,
+  riwayat: initRiwayat,
+  "data-detail-transaksi": initDataDetailTransaksi,   // ← tambah
   setting: initSetting,
   "data-kategori": initDataKategori,
   "data-kategori-form": initDataKategoriForm,
@@ -106,6 +107,7 @@ const PAGE_TITLES = {
   "data-produk": "Data Produk - Mobile App",
   "data-produk-form": "Form Produk - Mobile App",
   "data-list-pesanan": "List Pesanan - Mobile App",
+  "data-detail-transaksi": "Detail Transaksi - Mobile App",   // ← tambah
 };
 
 async function muat(id, file) {
@@ -179,7 +181,8 @@ async function navigateTo(page, opts = { pushState: true }) {
       "data-customer-form",
       "data-produk",
       "data-produk-form",
-      "data-list-pesanan"   // ← baru
+      "data-list-pesanan",   // ← baru
+      "data-detail-transaksi"   // ← tambah
     ];
     document.body.classList.toggle(
       "hide-app-chrome",
