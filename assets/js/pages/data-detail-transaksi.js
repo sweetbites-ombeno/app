@@ -93,8 +93,25 @@ function _renderDetailTransaksi(p) {
     const telpEl = document.getElementById("detailTelp");
     if (telpEl) telpEl.textContent = p.telp_customer || "-";
 
+    // ⬇️ Metode pembayaran + tombol bukti (khusus qris/transfer)
     const methodEl = document.getElementById("detailMethod");
     if (methodEl) methodEl.textContent = _methodLabel(p.method_bayar);
+
+    const buktiBtn = document.getElementById("detailBuktiBtn");
+    if (buktiBtn) {
+        const isNonCash = (p.method_bayar === "qris" || p.method_bayar === "transfer");
+        const hasImg = !!p.img_bayar_base64;
+
+        if (isNonCash && hasImg) {
+            buktiBtn.hidden = false;
+            buktiBtn.dataset.img = p.img_bayar_base64;
+            buktiBtn.dataset.kode = p.kode || "";
+        } else {
+            buktiBtn.hidden = true;
+            delete buktiBtn.dataset.img;
+            delete buktiBtn.dataset.kode;
+        }
+    }
 
     // Item title
     const itemTitle = document.getElementById("detailItemTitle");
@@ -146,6 +163,24 @@ if (!window._detailTransaksiBound) {
     document.addEventListener("click", function (e) {
         if (!document.querySelector(".page--detail-transaksi")) return;
 
+        // Tombol bukti bayar (Qris / Transfer)
+        const buktiBtn = e.target.closest("#detailBuktiBtn");
+        if (buktiBtn && !buktiBtn.hidden) {
+            e.preventDefault();
+            const src = buktiBtn.dataset.img || "";
+            if (!src) return;
+            if (typeof openImagePreview === "function") {
+                openImagePreview(src, "Bukti Pembayaran " + (buktiBtn.dataset.kode || ""));
+            } else {
+                openInfoPopup("Fitur pratinjau gambar tidak tersedia.", {
+                    title: "Tidak Tersedia",
+                    icon: "warning"
+                });
+            }
+            return;
+        }
+
+        // Tombol cetak struk (placeholder)
         const cetak = e.target.closest("#btnCetakStruk");
         if (cetak) {
             e.preventDefault();
