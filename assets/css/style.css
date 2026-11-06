@@ -3955,3 +3955,126 @@ body.page-is-order .app-header__actions {
     margin-top: 0;
     font-size: 14px;
 }
+
+/* ============================================
+   CROP POPUP (pembayaran qris/transfer)
+   ============================================ */
+.crop-popup {
+    position: fixed;
+    inset: 0;
+    z-index: 10002;
+    display: flex;
+    flex-direction: column;
+    background-color: #0f172a;
+    animation: fadeInOpacity 0.2s ease;
+}
+
+.crop-popup__header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    background-color: rgba(15, 23, 42, 0.95);
+    color: #ffffff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.crop-popup__title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.crop-popup__cancel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background-color var(--transition);
+}
+
+.crop-popup__cancel:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.crop-popup__stage {
+    flex: 1 1 auto;
+    min-height: 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.crop-popup__canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.crop-popup__hint {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 14px;
+    background-color: rgba(15, 23, 42, 0.85);
+    color: #ffffff;
+    font-size: 11.5px;
+    border-radius: 999px;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.crop-popup__footer {
+    flex-shrink: 0;
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    background-color: rgba(15, 23, 42, 0.95);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.crop-popup__footer .btn-primary,
+.crop-popup__footer .btn-secondary {
+    flex: 1 1 0;
+    height: 46px;
+    margin-top: 0;
+    font-size: 14px;
+}
+
+.crop-popup__footer .btn-secondary {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.crop-popup__footer .btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Tombol "Pilih File" di bawah "Ambil Gambar" */
+.pay-camera__btn-row {
+    display: flex;
+    gap: 8px;
+}
+
+.pay-camera__btn-row .btn-secondary {
+    flex: 1 1 0;
+    height: 44px;
+    margin-top: 0;
+    font-size: 13.5px;
+}

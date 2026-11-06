@@ -549,6 +549,7 @@ function openTunaiPopup() {
 }
 
 /* ---------- 2 & 3. Qris / Transfer ---------- */
+/* ---------- 2 & 3. Qris / Transfer ---------- */
 async function openCameraPopup(method) {
   const isQris = method === "qris";
   const title = isQris ? "Pembayaran Qris" : "Pembayaran Transfer";
@@ -571,10 +572,19 @@ async function openCameraPopup(method) {
                 </div>
             </div>
 
-            <button type="button" class="btn-secondary pay-camera__btn" id="btnAmbilGambar">
-                <i class="fa-solid fa-camera" aria-hidden="true"></i>
-                Ambil Gambar
-            </button>
+            <div class="pay-camera__btn-row">
+                <button type="button" class="btn-secondary pay-camera__btn" id="btnAmbilGambar">
+                    <i class="fa-solid fa-camera" aria-hidden="true"></i>
+                    Ambil Gambar
+                </button>
+                <button type="button" class="btn-secondary pay-camera__btn" id="btnPilihFileGambar">
+                    <i class="fa-solid fa-image" aria-hidden="true"></i>
+                    Pilih File
+                </button>
+            </div>
+
+            <!-- Input file hidden -->
+            <input type="file" id="inputFileBukti" accept="image/*" hidden>
 
             <div class="pay-modal__actions">
                 <button type="button" class="btn-secondary" id="btnCameraCancel">Batal</button>
@@ -594,6 +604,8 @@ async function openCameraPopup(method) {
   const preview = overlay.querySelector("#cameraPreview");
   const placeholder = overlay.querySelector("#cameraPlaceholder");
   const btnAmbil = overlay.querySelector("#btnAmbilGambar");
+  const btnPilihFile = overlay.querySelector("#btnPilihFileGambar");
+  const inputFile = overlay.querySelector("#inputFileBukti");
 
   try {
     stream = await navigator.mediaDevices.getUserMedia({
@@ -618,22 +630,85 @@ async function openCameraPopup(method) {
     }
   }
 
+  /* ----- Ambil via kamera (existing) ----- */
   btnAmbil.addEventListener("click", function () {
     if (!stream) {
-      alert("Kamera tidak tersedia.");
+      openInfoPopup("Kamera tidak tersedia.", {
+        title: "Kamera Error",
+        icon: "danger"
+      });
       return;
     }
     canvas.width = video.videoWidth || 640;
     canvas.height = video.videoHeight || 480;
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    capturedBase64 = canvas.toDataURL("image/jpeg", 0.85);
-    preview.src = capturedBase64;
+    const rawBase64 = canvas.toDataURL("image/jpeg", 0.85);
+    preview.src = rawBase64;
     preview.hidden = false;
     video.hidden = true;
     placeholder.hidden = true;
     btnAmbil.innerHTML = '<i class="fa-solid fa-camera-rotate"></i> Ambil Ulang';
     stopStream();
+
+    // Simpan mentah, nanti dikompres saat "Konfirmasi Bayar"
+    capturedBase64 = rawBase64;
+  });
+
+  /* ----- Pilih file ----- */
+  btnPilihFile.addEventListener("click", function () {
+    inputFile.click();
+  });
+
+  inputFile.addEventListener("change", async function () {
+    const file = inputFile.files && inputFile.files[0];
+    inputFile.value = ""; // reset supaya file sama bisa dipilih ulang
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      openInfoPopup("File harus berupa gambar.", {
+        title: "Format Salah",
+        icon: "warning"
+      });
+      return;
+    }
+
+    try {
+      const dataUrl = await _readFileAsDataURL(file);
+      // Buka popup crop
+      _openCropPopup(dataUrl, {
+        aspect: 3 / 4,
+        onConfirm: async function (croppedDataUrl) {
+          // Tampilkan preview hasil crop
+          preview.src = croppedDataUrl;
+          preview.hidden = false;
+          video.hidden = true;
+          placeholder.hidden = true;
+          btnAmbil.innerHTML = '<i class="fa-solid fa-camera-rotate"></i> Ambil Ulang';
+          stopStream();
+
+          // Kompres → WebP → base64
+          try {
+            const finalBase64 = await _compressToWebPBase64(croppedDataUrl, {
+              maxDim: 1280,
+              quality: 0.8
+            });
+            capturedBase64 = finalBase64;
+            preview.src = finalBase64; // update preview dengan hasil kompresi
+          } catch (err) {
+            console.warn("[crop] Gagal kompres:", err);
+            // Fallback: pakai hasil crop apa adanya
+            capturedBase64 = croppedDataUrl;
+          }
+        }
+      });
+    } catch (err) {
+      console.error("[file] Gagal baca file:", err);
+      openInfoPopup("Gagal membaca file: " + (err.message || "unknown"), {
+        title: "Gagal Memuat",
+        icon: "danger"
+      });
+    }
   });
 
   function close() {
@@ -642,7 +717,14 @@ async function openCameraPopup(method) {
   }
 
   overlay.querySelector("#btnCameraCancel").addEventListener("click", close);
-  overlay.querySelector("#btnCameraConfirm").addEventListener("click", function () {
+  overlay.querySelector("#btnCameraConfirm").addEventListener("click", async function () {
+    if (!capturedBase64) {
+      openInfoPopup("Ambil gambar atau pilih file bukti pembayaran terlebih dahulu.", {
+        title: "Bukti Belum Ada",
+        icon: "warning"
+      });
+      return;
+    }
     stopStream();
     closePayModal();
     processPayment({
@@ -729,6 +811,446 @@ async function processPayment(opts) {
     console.error("[order] Gagal simpan pembayaran:", err);
     alert("Gagal menyimpan pembayaran: " + (err.message || "Terjadi kesalahan"));
   }
+}
+
+/* ============================================
+   HELPER: Baca file, crop 4:3, compress WebP
+   ============================================ */
+
+function _readFileAsDataURL(file) {
+  return new Promise(function (resolve, reject) {
+    const reader = new FileReader();
+    reader.onload = function () { resolve(reader.result); };
+    reader.onerror = function () { reject(reader.error); };
+    reader.readAsDataURL(file);
+  });
+}
+
+function _loadImageEl(src) {
+  return new Promise(function (resolve, reject) {
+    const img = new Image();
+    img.onload = function () { resolve(img); };
+    img.onerror = function () { reject(new Error("Gagal memuat gambar")); };
+    img.src = src;
+  });
+}
+
+/**
+ * Kompres dataURL → WebP base64.
+ * @param {string} dataUrl
+ * @param {object} [opts] - { maxDim=1280, quality=0.8 }
+ * @returns {Promise<string>} dataURL WebP
+ */
+async function _compressToWebPBase64(dataUrl, opts) {
+  opts = opts || {};
+  const maxDim = opts.maxDim || 1280;
+  const quality = opts.quality == null ? 0.8 : opts.quality;
+
+  const img = await _loadImageEl(dataUrl);
+  let w = img.naturalWidth;
+  let h = img.naturalHeight;
+  const m = Math.max(w, h);
+  if (m > maxDim) {
+    const scale = maxDim / m;
+    w = Math.round(w * scale);
+    h = Math.round(h * scale);
+  }
+
+  const c = document.createElement("canvas");
+  c.width = w;
+  c.height = h;
+  const ctx = c.getContext("2d");
+  ctx.drawImage(img, 0, 0, w, h);
+
+  const blob = await new Promise(function (resolve) {
+    c.toBlob(function (b) { resolve(b); }, "image/webp", quality);
+  });
+  if (!blob) throw new Error("Browser tidak mendukung WebP.");
+
+  return new Promise(function (resolve, reject) {
+    const reader = new FileReader();
+    reader.onload = function () { resolve(reader.result); };
+    reader.onerror = function () { reject(reader.error); };
+    reader.readAsDataURL(blob);
+  });
+}
+
+/**
+ * Popup crop gambar dengan aspect ratio fixed.
+ * User bisa drag untuk menggeser, pinch/wheel untuk zoom.
+ *
+ * @param {string} imageSrc - dataURL atau URL
+ * @param {object} opts
+ * @param {number} [opts.aspect=4/3] - rasio width/height
+ * @param {Function} opts.onConfirm - callback(croppedDataUrl)
+ */
+function _openCropPopup(imageSrc, opts) {
+  opts = opts || {};
+  const aspect = opts.aspect || (4 / 3);
+
+  // Hapus popup lama kalau ada
+  const existing = document.getElementById("cropPopup");
+  if (existing) existing.remove();
+
+  const popup = document.createElement("div");
+  popup.className = "crop-popup";
+  popup.id = "cropPopup";
+  popup.innerHTML = `
+    <div class="crop-popup__header">
+      <h2 class="crop-popup__title">Sesuaikan Gambar</h2>
+      <button type="button" class="crop-popup__cancel" id="btnCropCancel">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        Batal
+      </button>
+    </div>
+    <div class="crop-popup__stage" id="cropStage">
+      <canvas class="crop-popup__canvas" id="cropCanvas"></canvas>
+      <div class="crop-popup__hint">Geser untuk mengatur &middot; Cubit/scroll untuk zoom</div>
+    </div>
+    <div class="crop-popup__footer">
+      <button type="button" class="btn-secondary" id="btnCropReset">
+        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+        Reset
+      </button>
+      <button type="button" class="btn-primary" id="btnCropOk">
+        <i class="fa-solid fa-check" aria-hidden="true"></i>
+        OK
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(popup);
+  document.body.classList.add("modal-open");
+
+  const stage = popup.querySelector("#cropStage");
+  const canvas = popup.querySelector("#cropCanvas");
+  const ctx = canvas.getContext("2d");
+
+  let img = null;
+  let stageW = 0, stageH = 0;
+  let cropW = 0, cropH = 0;
+
+  // State transform gambar di dalam crop box:
+  // offsetX/Y = posisi top-left gambar relatif ke crop box
+  // scale = skala gambar terhadap ukuran natural
+  let offsetX = 0, offsetY = 0, scale = 1;
+  let minScale = 0.1, maxScale = 5;
+
+  let dragging = false;
+  let dragStartX = 0, dragStartY = 0;
+  let dragStartOffX = 0, dragStartOffY = 0;
+
+  let pinchStartDist = 0;
+  let pinchStartScale = 1;
+
+  _loadImageEl(imageSrc).then(function (loaded) {
+    img = loaded;
+    _resizeStage();
+    _resetTransform();
+    _draw();
+    _bindEvents();
+  }).catch(function (err) {
+    console.error("[crop] Gagal load:", err);
+    openInfoPopup("Gagal memuat gambar: " + (err.message || "unknown"), {
+      title: "Gagal Memuat",
+      icon: "danger",
+      onClose: function () { _closeCropPopup(); }
+    });
+  });
+
+  function _resizeStage() {
+    // Ukuran stage = area antara header & footer
+    const rect = stage.getBoundingClientRect();
+    stageW = rect.width;
+    stageH = rect.height;
+
+    // DPR untuk canvas tajam
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.floor(stageW * dpr);
+    canvas.height = Math.floor(stageH * dpr);
+    canvas.style.width = stageW + "px";
+    canvas.style.height = stageH + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Hitung ukuran crop box (dengan margin 16px)
+    const margin = 16;
+    const availW = stageW - margin * 2;
+    const availH = stageH - margin * 2;
+
+    if (availW / availH > aspect) {
+      cropH = availH;
+      cropW = cropH * aspect;
+    } else {
+      cropW = availW;
+      cropH = cropW / aspect;
+    }
+  }
+
+  function _resetTransform() {
+    if (!img) return;
+    // scale awal = cover (isi crop box penuh)
+    const scaleX = cropW / img.naturalWidth;
+    const scaleY = cropH / img.naturalHeight;
+    scale = Math.max(scaleX, scaleY);
+    minScale = scale;
+    maxScale = scale * 4;
+
+    // center
+    offsetX = (cropW - img.naturalWidth * scale) / 2;
+    offsetY = (cropH - img.naturalHeight * scale) / 2;
+  }
+
+  function _clampTransform() {
+    if (!img) return;
+    const drawW = img.naturalWidth * scale;
+    const drawH = img.naturalHeight * scale;
+
+    // Pastikan gambar selalu menutup crop box
+    if (drawW <= cropW) {
+      offsetX = (cropW - drawW) / 2;
+    } else {
+      if (offsetX > 0) offsetX = 0;
+      if (offsetX + drawW < cropW) offsetX = cropW - drawW;
+    }
+    if (drawH <= cropH) {
+      offsetY = (cropH - drawH) / 2;
+    } else {
+      if (offsetY > 0) offsetY = 0;
+      if (offsetY + drawH < cropH) offsetY = cropH - drawH;
+    }
+  }
+
+  function _draw() {
+    if (!img) return;
+    _clampTransform();
+
+    // Background hitam penuh
+    ctx.clearRect(0, 0, stageW, stageH);
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(0, 0, stageW, stageH);
+
+    // Posisi crop box di stage (centered)
+    const boxX = (stageW - cropW) / 2;
+    const boxY = (stageH - cropH) / 2;
+
+    // Gambar
+    ctx.drawImage(
+      img,
+      boxX + offsetX,
+      boxY + offsetY,
+      img.naturalWidth * scale,
+      img.naturalHeight * scale
+    );
+
+    // Overlay gelap di luar crop box
+    ctx.save();
+    ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+    // atas
+    ctx.fillRect(0, 0, stageW, boxY);
+    // bawah
+    ctx.fillRect(0, boxY + cropH, stageW, stageH - (boxY + cropH));
+    // kiri
+    ctx.fillRect(0, boxY, boxX, cropH);
+    // kanan
+    ctx.fillRect(boxX + cropW, boxY, stageW - (boxX + cropW), cropH);
+    ctx.restore();
+
+    // Garis border crop box
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(boxX, boxY, cropW, cropH);
+
+    // Grid rule of thirds
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
+    ctx.lineWidth = 1;
+    for (let i = 1; i < 3; i++) {
+      const x = boxX + (cropW * i) / 3;
+      const y = boxY + (cropH * i) / 3;
+      ctx.beginPath();
+      ctx.moveTo(x, boxY);
+      ctx.lineTo(x, boxY + cropH);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(boxX, y);
+      ctx.lineTo(boxX + cropW, y);
+      ctx.stroke();
+    }
+  }
+
+  function _bindEvents() {
+    // Mouse drag
+    canvas.addEventListener("mousedown", function (e) {
+      dragging = true;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      dragStartOffX = offsetX;
+      dragStartOffY = offsetY;
+    });
+
+    window.addEventListener("mousemove", _onMouseMove);
+    window.addEventListener("mouseup", _onMouseUp);
+
+    // Wheel zoom
+    canvas.addEventListener("wheel", function (e) {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? 0.9 : 1.1;
+      _zoomAt(delta, e.clientX, e.clientY);
+    }, { passive: false });
+
+    // Touch
+    canvas.addEventListener("touchstart", function (e) {
+      if (e.touches.length === 1) {
+        dragging = true;
+        dragStartX = e.touches[0].clientX;
+        dragStartY = e.touches[0].clientY;
+        dragStartOffX = offsetX;
+        dragStartOffY = offsetY;
+      } else if (e.touches.length === 2) {
+        dragging = false;
+        pinchStartDist = _dist(e.touches[0], e.touches[1]);
+        pinchStartScale = scale;
+      }
+    }, { passive: true });
+
+    canvas.addEventListener("touchmove", function (e) {
+      if (e.touches.length === 1 && dragging) {
+        e.preventDefault();
+        const t = e.touches[0];
+        offsetX = dragStartOffX + (t.clientX - dragStartX);
+        offsetY = dragStartOffY + (t.clientY - dragStartY);
+        _draw();
+      } else if (e.touches.length === 2) {
+        e.preventDefault();
+        const d = _dist(e.touches[0], e.touches[1]);
+        if (pinchStartDist > 0) {
+          const newScale = pinchStartScale * (d / pinchStartDist);
+          const clampedScale = Math.max(minScale, Math.min(maxScale, newScale));
+          const mid = {
+            x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+            y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+          };
+          _applyZoom(clampedScale, mid);
+        }
+      }
+    }, { passive: false });
+
+    canvas.addEventListener("touchend", function () {
+      dragging = false;
+      pinchStartDist = 0;
+    });
+
+    // Buttons
+    popup.querySelector("#btnCropCancel").addEventListener("click", _closeCropPopup);
+    popup.querySelector("#btnCropReset").addEventListener("click", function () {
+      _resetTransform();
+      _draw();
+    });
+    popup.querySelector("#btnCropOk").addEventListener("click", _confirmCrop);
+
+    // Resize
+    window.addEventListener("resize", _onResize);
+  }
+
+  function _onMouseMove(e) {
+    if (!dragging) return;
+    offsetX = dragStartOffX + (e.clientX - dragStartX);
+    offsetY = dragStartOffY + (e.clientY - dragStartY);
+    _draw();
+  }
+
+  function _onMouseUp() {
+    dragging = false;
+  }
+
+  function _onResize() {
+    _resizeStage();
+    _draw();
+  }
+
+  function _dist(t1, t2) {
+    const dx = t1.clientX - t2.clientX;
+    const dy = t1.clientY - t2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function _applyZoom(newScale, clientPoint) {
+    // Zoom relatif ke titik (clientPoint) di stage
+    const rect = canvas.getBoundingClientRect();
+    const px = clientPoint.x - rect.left;
+    const py = clientPoint.y - rect.top;
+
+    // Posisi crop box di stage
+    const boxX = (stageW - cropW) / 2;
+    const boxY = (stageH - cropH) / 2;
+
+    // Titik di crop box (koordinat lokal)
+    const localX = px - boxX;
+    const localY = py - boxY;
+
+    // Posisi relatif terhadap gambar (0..1)
+    const imgRelX = (localX - offsetX) / (img.naturalWidth * scale);
+    const imgRelY = (localY - offsetY) / (img.naturalHeight * scale);
+
+    // Terapkan scale baru
+    scale = Math.max(minScale, Math.min(maxScale, newScale));
+
+    // Hitung offset baru agar titik yang sama tetap di posisi
+    offsetX = localX - imgRelX * (img.naturalWidth * scale);
+    offsetY = localY - imgRelY * (img.naturalHeight * scale);
+
+    _draw();
+  }
+
+  function _zoomAt(factor, clientX, clientY) {
+    _applyZoom(scale * factor, { x: clientX, y: clientY });
+  }
+
+  function _confirmCrop() {
+    if (!img) return;
+
+    // Buat canvas output ukuran asli crop
+    // Ukuran gambar di crop box (koordinat lokal): 
+    // crop box = cropW x cropH (display pixels)
+    // Rasio ke gambar natural: 1 / scale
+    // Source di gambar natural:
+    const sx = (-offsetX) / scale;
+    const sy = (-offsetY) / scale;
+    const sw = cropW / scale;
+    const sh = cropH / scale;
+
+    const outW = Math.round(sw);
+    const outH = Math.round(sh);
+
+    const outCanvas = document.createElement("canvas");
+    outCanvas.width = outW;
+    outCanvas.height = outH;
+    const outCtx = outCanvas.getContext("2d");
+    outCtx.drawImage(img, sx, sy, sw, sh, 0, 0, outW, outH);
+
+    const dataUrl = outCanvas.toDataURL("image/jpeg", 0.92);
+
+    // Tutup popup dulu
+    _closeCropPopup();
+
+    // Panggil callback
+    if (typeof opts.onConfirm === "function") {
+      try { opts.onConfirm(dataUrl); } catch (e) { console.warn("[crop] onConfirm error:", e); }
+    }
+  }
+
+  function _closeCropPopup() {
+    window.removeEventListener("mousemove", _onMouseMove);
+    window.removeEventListener("mouseup", _onMouseUp);
+    window.removeEventListener("resize", _onResize);
+    popup.remove();
+    // Hati-hati: jangan hapus modal-open kalau ada pay-modal aktif di belakang
+    if (!document.getElementById("payModal")) {
+      document.body.classList.remove("modal-open");
+    }
+  }
+
+  // Expose close supaya bisa dipanggil dari luar (mis. error handler)
+  window._closeCropPopup = _closeCropPopup;
 }
 
 /* ============================================

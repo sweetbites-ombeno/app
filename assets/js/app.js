@@ -399,7 +399,12 @@ function bindKategoriActions() {
         }
       }).catch(function (err) {
         console.error("[kategori] Gagal hapus:", err);
-        alert("Gagal menghapus: " + err.message);
+        // alert("Gagal menghapus: " + err.message);
+        // Sesudah
+        openInfoPopup("Gagal menghapus: " + err.message, {
+          title: "Gagal Menghapus",
+          icon: "danger"
+        });
       });
       return;
     }
@@ -464,7 +469,12 @@ function bindCustomerActions() {
         }
       }).catch(function (err) {
         console.error("[customer] Gagal hapus:", err);
-        alert("Gagal menghapus: " + err.message);
+        // alert("Gagal menghapus: " + err.message);
+        // Sesudah
+        openInfoPopup("Gagal menghapus: " + err.message, {
+          title: "Gagal Menghapus",
+          icon: "danger"
+        });
       });
       return;
     }
@@ -515,7 +525,12 @@ function bindProdukActions() {
         })
         .catch(function (err) {
           console.error("[produk] Gagal hapus:", err);
-          alert("Gagal menghapus: " + err.message);
+          // alert("Gagal menghapus: " + err.message);
+          // Sesudah
+          openInfoPopup("Gagal menghapus: " + err.message, {
+            title: "Gagal Menghapus",
+            icon: "danger"
+          });
         });
     }
   });
