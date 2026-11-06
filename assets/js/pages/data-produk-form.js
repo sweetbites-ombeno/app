@@ -1,12 +1,13 @@
 /* ============================================
    HALAMAN FORM PRODUK (Tambah / Edit)
-   Image: validasi → convert WebP → base64
+   Alur gambar: pilih → crop 4:3 vertikal → compress → WebP → base64 → simpan
    + Pemilik (id_user) dari tabel user
    ============================================ */
 
-const PRODUK_IMAGE_MAX_BYTES = 100 * 1024;
-const PRODUK_IMAGE_MAX_DIM = 1200;
-const PRODUK_IMAGE_WEBP_QUALITY = 0.85;
+const PRODUK_IMAGE_MAX_BYTES = 10 * 1024 * 1024; // 10 MB (batas file input)
+const PRODUK_IMAGE_MAX_DIM = 1200;               // dimensi maksimal setelah crop
+const PRODUK_IMAGE_TARGET_BYTES = 100 * 1024;    // target hasil WebP (100 KB)
+const PRODUK_CROP_ASPECT = 3 / 4;                // 4:3 vertikal (lebar:tinggi = 3:4)
 
 let _pendingImageBase64 = "";
 
@@ -40,38 +41,78 @@ function loadImage(src) {
     img.src = src;
   });
 }
-async function convertImageToWebPBase64(file) {
-  const dataUrl = await readFileAsDataURL(file);
+
+/**
+ * Kompres dataURL → WebP base64 dengan target ukuran maksimal.
+ * Strategi:
+ *   1. Turunkan quality bertahap (0.85 → 0.35)
+ *   2. Kalau masih > target, downscale 80% dan ulangi (maks 4x)
+ *
+ * @param {string} dataUrl
+ * @param {number} maxDim       - dimensi maksimal awal (px)
+ * @param {number} targetBytes  - target ukuran maksimal (bytes)
+ * @returns {Promise<{base64:string, size:number}>}
+ */
+async function _compressToWebPBase64WithLimit(dataUrl, maxDim, targetBytes) {
   const img = await loadImage(dataUrl);
 
+  // Dimensi awal (resize kalau > maxDim)
   let w = img.naturalWidth;
   let h = img.naturalHeight;
-  const maxDim = Math.max(w, h);
-  if (maxDim > PRODUK_IMAGE_MAX_DIM) {
-    const scale = PRODUK_IMAGE_MAX_DIM / maxDim;
+  const m = Math.max(w, h);
+  if (m > maxDim) {
+    const scale = maxDim / m;
     w = Math.round(w * scale);
     h = Math.round(h * scale);
   }
 
-  const canvas = document.createElement("canvas");
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(img, 0, 0, w, h);
+  const qualities = [0.85, 0.75, 0.65, 0.55, 0.45, 0.35];
+  let lastBlob = null;
+  let currentW = w;
+  let currentH = h;
 
-  const blob = await new Promise(function (resolve) {
-    canvas.toBlob(function (b) { resolve(b); }, "image/webp", PRODUK_IMAGE_WEBP_QUALITY);
-  });
-  if (!blob) throw new Error("Browser tidak mendukung konversi WebP.");
+  // Maks 4 percobaan downscale (0.8^4 ≈ 0.4 → resolusi jadi ~40%)
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const canvas = document.createElement("canvas");
+    canvas.width = currentW;
+    canvas.height = currentH;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, currentW, currentH);
+
+    // Coba turunkan quality dulu
+    let blob = null;
+    for (let i = 0; i < qualities.length; i++) {
+      const q = qualities[i];
+      const b = await new Promise(function (resolve) {
+        canvas.toBlob(function (x) { resolve(x); }, "image/webp", q);
+      });
+      if (!b) continue;
+      blob = b;
+      lastBlob = b;
+      if (b.size <= targetBytes) break;
+    }
+
+    // Sudah memenuhi target? → selesai
+    if (blob && blob.size <= targetBytes) break;
+
+    // Masih kebesaran → downscale 80% lalu ulangi
+    currentW = Math.round(currentW * 0.8);
+    currentH = Math.round(currentH * 0.8);
+
+    // Jaga-jaga: kalau sudah terlalu kecil, stop
+    if (currentW < 100 || currentH < 100) break;
+  }
+
+  if (!lastBlob) throw new Error("Browser tidak mendukung konversi WebP.");
 
   const base64 = await new Promise(function (resolve, reject) {
     const reader = new FileReader();
     reader.onload = function () { resolve(reader.result); };
     reader.onerror = function () { reject(reader.error); };
-    reader.readAsDataURL(blob);
+    reader.readAsDataURL(lastBlob);
   });
 
-  return { base64: base64, size: blob.size };
+  return { base64: base64, size: lastBlob.size };
 }
 
 /* ---------- Dropify UI ---------- */
@@ -95,29 +136,65 @@ function resetDropify() {
   if (placeholder) placeholder.style.display = "";
   if (removeBtn) removeBtn.hidden = true;
   if (fileInput) fileInput.value = "";
+  const hint = document.getElementById("imageHint");
+  if (hint) hint.textContent = "Gambar akan di-crop 4:3, lalu dikompres ke WebP.";
 }
+
+/**
+ * Alur: pilih file → crop 4:3 vertikal → compress WebP → base64.
+ * Menggunakan _openCropPopup() & _compressToWebPBase64WithLimit().
+ */
 async function handleProdukImageFile(file) {
   const hint = document.getElementById("imageHint");
   if (!file) return;
+
   const allowed = ["image/png", "image/jpeg", "image/jpg"];
   if (allowed.indexOf(file.type) === -1) {
-    alert("Format harus PNG, JPG, atau JPEG.");
+    alert("Format harus PNG, JPG, JPEG, atau WebP.");
     return;
   }
   if (file.size > PRODUK_IMAGE_MAX_BYTES) {
-    alert(`Ukuran file maksimal 100 KB. File Anda: ${formatFileSize(file.size)}`);
+    alert(
+      "Ukuran file maksimal " + formatFileSize(PRODUK_IMAGE_MAX_BYTES) +
+      ". File Anda: " + formatFileSize(file.size)
+    );
     return;
   }
-  if (hint) hint.textContent = "Mengonversi ke WebP...";
+
+  if (hint) hint.textContent = "Membuka editor crop...";
+
   try {
-    const result = await convertImageToWebPBase64(file);
-    _pendingImageBase64 = result.base64;
-    showDropifyPreview(result.base64);
-    if (hint) hint.textContent = `Siap disimpan sebagai WebP (${formatFileSize(result.size)}).`;
+    const dataUrl = await readFileAsDataURL(file);
+
+    if (typeof _openCropPopup !== "function") {
+      throw new Error("Fungsi crop tidak tersedia. Pastikan order.js dimuat.");
+    }
+
+    _openCropPopup(dataUrl, {
+      aspect: PRODUK_CROP_ASPECT,
+      onConfirm: async function (croppedDataUrl) {
+        if (hint) hint.textContent = "Mengompres & konversi ke WebP...";
+        try {
+          const result = await _compressToWebPBase64WithLimit(
+            croppedDataUrl,
+            PRODUK_IMAGE_MAX_DIM,
+            PRODUK_IMAGE_TARGET_BYTES
+          );
+          _pendingImageBase64 = result.base64;
+          showDropifyPreview(result.base64);
+          if (hint) hint.textContent =
+            "Siap disimpan (WebP " + formatFileSize(result.size) + ").";
+        } catch (err) {
+          console.error("[produk] Gagal kompres:", err);
+          alert("Gagal memproses gambar: " + (err.message || "unknown"));
+          if (hint) hint.textContent = "Gambar akan di-crop 4:3, lalu dikompres ke WebP.";
+        }
+      }
+    });
   } catch (err) {
-    console.error("[produk] Gagal konversi gambar:", err);
-    alert("Gagal memproses gambar: " + (err.message || "unknown"));
-    if (hint) hint.textContent = "Gambar akan otomatis dikonversi ke WebP.";
+    console.error("[produk] Gagal baca file:", err);
+    alert("Gagal membaca file: " + (err.message || "unknown"));
+    if (hint) hint.textContent = "Gambar akan di-crop 4:3, lalu dikompres ke WebP.";
   }
 }
 
@@ -137,9 +214,9 @@ async function loadPemilikOptions(selectedId) {
     inputPemilik.innerHTML = '<option value="">-- Pilih Pemilik --</option>' +
       users.map(function (u) {
         const label = u.name
-          ? `${escapeHTML(u.name)} (@${escapeHTML(u.username)})`
-          : `@${escapeHTML(u.username)}`;
-        return `<option value="${escapeHTML(u.id)}">${label}</option>`;
+          ? escapeHTML(u.name) + " (@" + escapeHTML(u.username) + ")"
+          : "@" + escapeHTML(u.username);
+        return '<option value="' + escapeHTML(u.id) + '">' + label + '</option>';
       }).join("");
 
     // Default: user yang sedang login
@@ -180,7 +257,8 @@ async function initDataProdukForm() {
     if (inputKategori) {
       inputKategori.innerHTML = '<option value="">-- Pilih kategori --</option>' +
         kats.map(function (k) {
-          return `<option value="${escapeHTML(k.id)}">${escapeHTML(k.name || "")}</option>`;
+          return '<option value="' + escapeHTML(k.id) + '">' +
+            escapeHTML(k.name || "") + '</option>';
         }).join("");
     }
   } catch (err) {
@@ -269,6 +347,7 @@ async function initDataProdukForm() {
     });
     fileInput.addEventListener("change", function () {
       const file = fileInput.files && fileInput.files[0];
+      fileInput.value = "";  // ⬅️ reset agar file sama bisa dipilih lagi
       if (file) handleProdukImageFile(file);
     });
   }
@@ -278,7 +357,7 @@ async function initDataProdukForm() {
       e.stopPropagation();
       resetDropify();
       const hint = document.getElementById("imageHint");
-      if (hint) hint.textContent = "Gambar akan otomatis dikonversi ke WebP.";
+      if (hint) hint.textContent = "Gambar akan di-crop 4:3, lalu dikompres ke WebP.";
     });
   }
 

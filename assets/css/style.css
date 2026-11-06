@@ -1464,8 +1464,8 @@ body.hide-app-chrome #main-content {
 .dropify__preview {
     display: block;
     width: 100%;
-    max-height: 280px;
-    object-fit: contain;
+    max-height: 400px;
+    object-fit: cover;
     background-color: #f1f5f9;
 }
 
