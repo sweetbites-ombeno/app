@@ -1,0 +1,101 @@
+<section class="page page--pembelian">
+
+  <!-- ============================================
+         HEADER CUSTOM
+         ============================================ -->
+  <div class="page-header page-header--riwayat">
+    <div class="page-header__top">
+      <a href="app.html?page=setting" class="page-header__btn" aria-label="Kembali">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+      </a>
+
+      <div class="page-header__title-wrap">
+        <h1 class="page-header__title">Data Pembelian &amp; Pengeluaran</h1>
+        <p class="page-header__subtitle">Catatan pembelian dan pengeluaran</p>
+      </div>
+
+      <button type="button" class="page-header__btn" id="btnRefreshPembelian" aria-label="Muat ulang">
+        <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <!-- Badge filter -->
+    <div class="riwayat-filter" id="pembelianFilter" role="tablist" aria-label="Filter pembelian">
+      <button type="button" class="riwayat-filter__badge is-active" data-filter="hari-ini" role="tab"
+        aria-selected="true">
+        Hari ini
+      </button>
+      <button type="button" class="riwayat-filter__badge" data-filter="minggu-ini" role="tab" aria-selected="false">
+        Minggu ini
+      </button>
+      <button type="button" class="riwayat-filter__badge" data-filter="bulan-ini" role="tab" aria-selected="false">
+        Bulan ini
+      </button>
+      <button type="button" class="riwayat-filter__badge" data-filter="pilih-tanggal" role="tab" aria-selected="false"
+        id="badgePilihTanggalPembelian">
+        Pilih Tanggal
+      </button>
+    </div>
+
+    <!-- Summary card -->
+    <div class="riwayat-summary" id="pembelianSummary">
+      <div class="riwayat-summary__left">
+        <span class="riwayat-summary__label" id="pembelianSummaryLabel">Pengeluaran Hari ini</span>
+        <span class="riwayat-summary__count" id="pembelianSummaryCount">Ada 0 pembelian</span>
+      </div>
+      <span class="riwayat-summary__total" id="pembelianSummaryTotal">Rp 0</span>
+    </div>
+  </div>
+
+  <!-- List pembelian -->
+  <div class="riwayat-list" id="pembelianList"></div>
+
+  <!-- Empty state -->
+  <div class="kategori-empty" id="pembelianEmpty" style="display:none">
+    <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
+    <p>Belum ada data pembelian.</p>
+  </div>
+
+</section>
+
+<!-- FAB tambah pembelian -->
+<button type="button" class="fab-add" data-action="add-pembelian" aria-label="Tambah pembelian">
+  <i class="fa-solid fa-plus" aria-hidden="true"></i>
+</button>
+
+<!-- ============================================
+     POPUP PILIH TANGGAL
+     ============================================ -->
+<div class="pay-modal" id="pembelianTanggalModal" hidden>
+  <div class="pay-modal__box">
+    <h2 class="pay-modal__title">Pilih Tanggal Pembelian</h2>
+
+    <div class="form-group" style="text-align:left">
+      <label for="pembelianTanggalAwal">Tanggal Awal</label>
+      <div class="form-group__input">
+        <i class="fa-regular fa-calendar form-group__icon" aria-hidden="true"></i>
+        <input type="date" id="pembelianTanggalAwal" name="pembelianTanggalAwal">
+      </div>
+    </div>
+
+    <div class="form-group" style="text-align:left">
+      <label for="pembelianTanggalAkhir">Tanggal Akhir</label>
+      <div class="form-group__input">
+        <i class="fa-regular fa-calendar form-group__icon" aria-hidden="true"></i>
+        <input type="date" id="pembelianTanggalAkhir" name="pembelianTanggalAkhir">
+      </div>
+    </div>
+
+    <p class="save-order-error" id="pembelianTanggalError" role="alert"></p>
+
+    <div class="pay-modal__actions">
+      <button type="button" class="btn-secondary" id="btnPembelianTanggalBatal">
+        Batal
+      </button>
+      <button type="button" class="btn-primary" id="btnPembelianTanggalTerapkan">
+        <i class="fa-solid fa-check" aria-hidden="true"></i>
+        Terapkan
+      </button>
+    </div>
+  </div>
+</div>

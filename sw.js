@@ -27,6 +27,8 @@ const PRECACHE_URLS = [
     './riwayat-content.html',
     './data-detail-transaksi-content.html',
     './assets/js/pages/data-detail-transaksi.js',
+    './data-pembelian-content.html',
+    './assets/js/pages/data-pembelian.js',
     // ... file JS halaman lainnya
 ];
 
