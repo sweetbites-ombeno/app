@@ -371,7 +371,10 @@ async function initDataPembelianForm() {
   if (mode === "edit" && editId) {
     try {
       const data = await db.pembelian.get(editId);
-      if (data && !data.deleted_at) {
+      const userId = sessionStorage.getItem("login");
+
+      if (data && !data.deleted_at && data.id_user === userId) {
+        // ✅ milik user ini → load data
         if (titleEl) titleEl.textContent = "Edit Pembelian";
         if (subtitleEl) subtitleEl.textContent = "Ubah data pembelian";
         if (inputDeskripsi) inputDeskripsi.value = data.deskripsi || "";
@@ -386,7 +389,6 @@ async function initDataPembelianForm() {
           if (hint) hint.textContent = "Gambar tersimpan. Klik hapus untuk mengganti.";
         }
 
-        // Load detail
         const details = await db.pembelian_detail
           .where("pembelian").equals(editId)
           .filter(d => !d.deleted_at)
@@ -404,10 +406,28 @@ async function initDataPembelianForm() {
           };
         });
       } else {
+        // ❌ bukan milik user → sembunyikan form dulu
+        const pageEl = document.querySelector(".page--pembelian-form");
+        if (pageEl) pageEl.style.display = "none";
+
         if (titleEl) titleEl.textContent = "Tambah Pembelian";
         if (subtitleEl) subtitleEl.textContent = "Isi data pembelian baru";
         if (inputMode) inputMode.value = "add";
         if (inputId) inputId.value = "";
+
+        if (data && !data.deleted_at && data.id_user !== userId) {
+          if (typeof openInfoPopup === "function") {
+            openInfoPopup("Data pembelian ini bukan milik akun Anda.", {
+              title: "Akses Ditolak",
+              icon: "danger",
+              button: "Kembali",
+              onClose: function () { navigateTo("data-pembelian"); }
+            });
+          } else {
+            alert("Data pembelian bukan milik akun Anda.");
+            navigateTo("data-pembelian");
+          }
+        }
       }
     } catch (err) {
       console.error("[pembelian-form] Gagal load:", err);
@@ -560,6 +580,11 @@ async function initDataPembelianForm() {
       let pembelianId = editId;
 
       if (inputMode.value === "edit" && editId) {
+        // ⬇️ TAMBAH: pastikan data milik user ini sebelum update
+        const existing = await db.pembelian.get(editId);
+        if (!existing || existing.deleted_at || existing.id_user !== userId) {
+          throw new Error("Data pembelian bukan milik akun ini.");
+        }
         await db.pembelian.update(editId, payload);
 
         // HARD DELETE detail lama

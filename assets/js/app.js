@@ -19,7 +19,6 @@ const PAGE_INIT = {
   "data-produk-form": initDataProdukForm,
   "data-pembelian": initDataPembelian,
   "data-pembelian-form": initDataPembelianForm,
-  "data-pembelian-form": initDataPembelianForm,
   "data-pembelian-detail": initDataPembelianDetail,   // ← TAMBAH
 };
 

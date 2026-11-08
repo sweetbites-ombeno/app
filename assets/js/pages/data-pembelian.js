@@ -296,6 +296,17 @@ if (!window._pembelianBound) {
       if (!confirm(`Hapus pembelian "${name}"?`)) return;
 
       try {
+        const userId = sessionStorage.getItem("login");
+        // ⬇️ TAMBAH: cek kepemilikan sebelum soft delete
+        const existing = await db.pembelian.get(id);
+        if (!existing || existing.deleted_at || existing.id_user !== userId) {
+          openInfoPopup("Data pembelian bukan milik akun ini.", {
+            title: "Akses Ditolak",
+            icon: "danger"
+          });
+          return;
+        }
+
         const now = new Date().toISOString();
 
         // Soft delete pembelian
