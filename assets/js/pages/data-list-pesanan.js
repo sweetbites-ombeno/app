@@ -101,7 +101,6 @@ function _renderListPesanan() {
         const expanded = !!_listPesananExpanded[p.id];
         const tanggalStr = _formatTanggalSingkat(p.tanggal_pesan);
         const initials = (p.name_customer || "?").trim().charAt(0).toUpperCase();
-        const isBayarDisabled = false;
 
         const detailsHTML = p._details.map(d => {
             const subtotal = (d.total || 0).toLocaleString("id-ID");

@@ -1,0 +1,194 @@
+<section class="page page--pembelian-form">
+
+  <div class="page-header page-header--simple">
+    <div class="page-header__top">
+      <a href="app.html?page=data-pembelian" class="page-header__btn" id="btnBackPembelianForm" aria-label="Kembali">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+      </a>
+      <div class="page-header__title-wrap">
+        <h1 class="page-header__title" id="formTitlePembelian">Tambah Pembelian</h1>
+        <p class="page-header__subtitle" id="formSubtitlePembelian">Isi data pembelian baru</p>
+      </div>
+      <span class="page-header__spacer" aria-hidden="true"></span>
+    </div>
+  </div>
+
+  <form class="kategori-form" id="pembelianForm" novalidate>
+    <input type="hidden" id="pembelianMode" value="add">
+    <input type="hidden" id="pembelianId" value="">
+
+    <!-- DESKRIPSI -->
+    <div class="form-group">
+      <label for="pembelianDeskripsi">Deskripsi</label>
+      <div class="form-group__input">
+        <i class="fa-solid fa-file-lines form-group__icon" aria-hidden="true"></i>
+        <input type="text" id="pembelianDeskripsi" name="pembelianDeskripsi" placeholder="Contoh: Beli bahan baku kopi"
+          autocomplete="off" maxlength="150">
+      </div>
+      <p class="form-hint">Deskripsi pembelian wajib diisi.</p>
+    </div>
+
+    <!-- TEMPAT -->
+    <div class="form-group">
+      <label for="pembelianTempat">Tempat</label>
+      <div class="form-group__input">
+        <i class="fa-solid fa-location-dot form-group__icon" aria-hidden="true"></i>
+        <input type="text" id="pembelianTempat" name="pembelianTempat" placeholder="Contoh: Pasar Induk"
+          autocomplete="off" maxlength="100">
+      </div>
+      <p class="form-hint">Tempat pembelian (opsional).</p>
+    </div>
+
+    <!-- TANGGAL BELI -->
+    <div class="form-group">
+      <label for="pembelianTanggalBeli">Tanggal Beli</label>
+      <div class="form-group__input">
+        <i class="fa-regular fa-calendar form-group__icon" aria-hidden="true"></i>
+        <input type="date" id="pembelianTanggalBeli" name="pembelianTanggalBeli">
+      </div>
+      <p class="form-hint">Tanggal pembelian (tanpa jam).</p>
+    </div>
+
+    <!-- METODE BELI -->
+    <div class="form-group">
+      <label for="pembelianMetodeBeli">Metode Beli</label>
+      <div class="form-group__input">
+        <i class="fa-solid fa-wallet form-group__icon" aria-hidden="true"></i>
+        <select id="pembelianMetodeBeli" name="pembelianMetodeBeli">
+          <option value="tunai">Tunai</option>
+          <option value="qris">Qris</option>
+          <option value="transfer">Transfer</option>
+          <option value="e-wallet">E-Wallet</option>
+        </select>
+      </div>
+      <p class="form-hint">Pilih metode pembayaran.</p>
+    </div>
+
+    <!-- GAMBAR PENDUKUNG (DROPIFY) -->
+    <div class="form-group">
+      <label for="pembelianImage">Gambar Pendukung</label>
+      <div class="dropify" id="dropifyPembelian" tabindex="0" role="button" aria-label="Pilih gambar pendukung">
+        <input type="file" id="pembelianImage" accept="image/png,image/jpeg,image/jpg" hidden>
+        <div class="dropify__placeholder" id="dropifyPembelianPlaceholder">
+          <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
+          <p class="dropify__text">Klik / seret gambar ke sini</p>
+          <p class="dropify__hint">PNG, JPG, JPEG &middot; maks 10 MB</p>
+        </div>
+        <img class="dropify__preview" id="dropifyPembelianPreview" alt="Preview" hidden>
+        <button type="button" class="dropify__remove" id="dropifyPembelianRemove" aria-label="Hapus gambar" hidden>
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </div>
+      <p class="form-hint" id="imageHintPembelian">Gambar akan otomatis dikonversi ke WebP.</p>
+    </div>
+
+    <!-- DETAIL PEMBELIAN -->
+    <div class="form-group" style="gap:8px">
+      <label>Detail Pembelian</label>
+      <div class="pembelian-detail-list" id="pembelianDetailList">
+        <!-- Card item dirender JS -->
+      </div>
+      <div class="pembelian-detail-empty" id="pembelianDetailEmpty">
+        <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+        <p>Belum ada item. Klik "Tambah Item Beli" untuk menambah.</p>
+      </div>
+    </div>
+
+    <!-- RINGKASAN TOTAL -->
+    <div class="save-order-summary" id="pembelianSummary" hidden>
+      <div class="save-order-summary__row">
+        <span class="save-order-summary__label">
+          <i class="fa-solid fa-calculator" aria-hidden="true"></i>
+          Total Item
+        </span>
+        <span class="save-order-summary__value" id="pembelianTotalItems">0 item</span>
+      </div>
+      <div class="save-order-summary__row">
+        <span class="save-order-summary__label">
+          <i class="fa-solid fa-money-bill-wave" aria-hidden="true"></i>
+          Total Harga
+        </span>
+        <span class="save-order-summary__value save-order-summary__value--total" id="pembelianTotalHarga">
+          Rp 0
+        </span>
+      </div>
+    </div>
+
+    <!-- TOMBOL -->
+    <div class="pembelian-form-actions">
+      <button type="button" class="btn-secondary" id="btnTambahItemBeli">
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+        Tambah Item Beli
+      </button>
+      <button type="submit" class="btn-primary" id="btnSimpanPembelian">
+        <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+        Simpan
+      </button>
+    </div>
+
+  </form>
+
+</section>
+
+<!-- ============================================
+     POPUP TAMBAH/EDIT ITEM BELI
+     ============================================ -->
+<div class="pay-modal" id="itemBeliModal" hidden>
+  <div class="pay-modal__box">
+    <h2 class="pay-modal__title" id="itemBeliModalTitle">Tambah Item Beli</h2>
+
+    <input type="hidden" id="itemBeliMode" value="add">
+    <input type="hidden" id="itemBeliIndex" value="">
+
+    <div class="form-group" style="text-align:left">
+      <label for="itemBeliName">Nama Item</label>
+      <div class="form-group__input">
+        <i class="fa-solid fa-box form-group__icon" aria-hidden="true"></i>
+        <input type="text" id="itemBeliName" placeholder="Contoh: Kopi Arabika" autocomplete="off" maxlength="100">
+      </div>
+    </div>
+
+    <div class="form-group" style="text-align:left">
+      <label for="itemBeliQty">Jumlah Beli</label>
+      <div class="form-group__input">
+        <i class="fa-solid fa-hashtag form-group__icon" aria-hidden="true"></i>
+        <input type="text" id="itemBeliQty" placeholder="Contoh: 2" inputmode="numeric" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="form-group" style="text-align:left">
+      <label for="itemBeliSatuan">Satuan</label>
+      <div class="form-group__input">
+        <i class="fa-solid fa-ruler form-group__icon" aria-hidden="true"></i>
+        <input type="text" id="itemBeliSatuan" placeholder="Contoh: pcs, kg, liter" autocomplete="off" maxlength="20">
+      </div>
+    </div>
+
+    <div class="form-group" style="text-align:left">
+      <label for="itemBeliHargaSatuan">Harga Satuan</label>
+      <div class="form-group__input">
+        <i class="fa-solid fa-money-bill-wave form-group__icon" aria-hidden="true"></i>
+        <input type="text" id="itemBeliHargaSatuan" placeholder="Contoh: 12.000" inputmode="numeric" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="form-group" style="text-align:left">
+      <label for="itemBeliTotal">Total</label>
+      <div class="form-group__input">
+        <i class="fa-solid fa-calculator form-group__icon" aria-hidden="true"></i>
+        <input type="text" id="itemBeliTotal" placeholder="Otomatis terhitung" inputmode="numeric" autocomplete="off">
+      </div>
+      <p class="form-hint" id="itemBeliHint">Harga satuan × jumlah beli.</p>
+    </div>
+
+    <p class="save-order-error" id="itemBeliError" role="alert"></p>
+
+    <div class="pay-modal__actions">
+      <button type="button" class="btn-secondary" id="btnItemBeliBatal">Batal</button>
+      <button type="button" class="btn-primary" id="btnItemBeliSimpan">
+        <i class="fa-solid fa-check" aria-hidden="true"></i>
+        Simpan
+      </button>
+    </div>
+  </div>
+</div>

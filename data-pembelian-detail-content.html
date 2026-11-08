@@ -1,0 +1,91 @@
+<section class="page page--pembelian-detail">
+
+  <!-- ============================================
+       HEADER CUSTOM
+       ============================================ -->
+  <div class="page-header page-header--simple">
+    <div class="page-header__top">
+      <a href="app.html?page=data-pembelian" class="page-header__btn" id="btnBackPembelianDetail" aria-label="Kembali">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+      </a>
+
+      <div class="page-header__title-wrap">
+        <h1 class="page-header__title">Detail Pembelian</h1>
+        <p class="page-header__subtitle" id="pembelianDetailSubtitle">-</p>
+      </div>
+
+      <span class="page-header__spacer" aria-hidden="true"></span>
+    </div>
+  </div>
+
+  <!-- ============================================
+       CARD STATUS LUNAS (hijau)
+       ============================================ -->
+  <div class="detail-status-card" id="pembelianDetailStatusCard">
+    <div class="detail-status-card__left">
+      <div class="detail-status-card__icon">
+        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+      </div>
+      <div class="detail-status-card__text">
+        <span class="detail-status-card__title">Pembayaran Lunas</span>
+        <span class="detail-status-card__date" id="pembelianDetailTanggal">-</span>
+      </div>
+    </div>
+    <span class="detail-status-card__total" id="pembelianDetailTotal">Rp 0</span>
+  </div>
+
+  <!-- ============================================
+       INFO PEMBELIAN
+       ============================================ -->
+  <h2 class="detail-section-title">Info Pembelian</h2>
+  <div class="detail-info-card" id="pembelianInfoCard">
+    <div class="detail-row">
+      <span class="detail-row__label">Deskripsi</span>
+      <span class="detail-row__value" id="pembelianInfoDeskripsi">-</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-row__label">Tempat</span>
+      <span class="detail-row__value" id="pembelianInfoTempat">-</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-row__label">Tanggal Beli</span>
+      <span class="detail-row__value" id="pembelianInfoTanggal">-</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-row__label">Metode Beli</span>
+      <span class="detail-row__value" id="pembelianInfoMetode">-</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-row__label">Gambar Pendukung</span>
+      <span class="detail-row__value detail-row__value--gambar" id="pembelianInfoGambarWrap">
+        <button type="button" class="detail-bukti-btn" id="pembelianBuktiBtn" hidden aria-label="Lihat gambar pendukung"
+          title="Lihat gambar pendukung">
+          <i class="fa-solid fa-image" aria-hidden="true"></i>
+        </button>
+        <span id="pembelianInfoGambarText">-</span>
+      </span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-row__label">Dibeli Oleh</span>
+      <span class="detail-row__value" id="pembelianInfoUser">-</span>
+    </div>
+  </div>
+
+  <!-- ============================================
+       ITEM
+       ============================================ -->
+  <h2 class="detail-section-title" id="pembelianItemTitle">Item (0)</h2>
+  <div class="detail-items-card" id="pembelianItemsCard"></div>
+
+  <!-- ============================================
+       RINCIAN
+       ============================================ -->
+  <h2 class="detail-section-title">Rincian</h2>
+  <div class="detail-info-card" id="pembelianRincianCard">
+    <div class="detail-row">
+      <span class="detail-row__label">Total</span>
+      <span class="detail-row__value detail-row__value--total" id="pembelianRincianTotal">Rp 0</span>
+    </div>
+  </div>
+
+</section>

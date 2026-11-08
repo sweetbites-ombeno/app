@@ -18,6 +18,9 @@ const PAGE_INIT = {
   "data-produk": initDataProduk,
   "data-produk-form": initDataProdukForm,
   "data-pembelian": initDataPembelian,
+  "data-pembelian-form": initDataPembelianForm,
+  "data-pembelian-form": initDataPembelianForm,
+  "data-pembelian-detail": initDataPembelianDetail,   // ← TAMBAH
 };
 
 const HALAMAN_LOGIN = "index.html";
@@ -110,6 +113,8 @@ const PAGE_TITLES = {
   "data-list-pesanan": "List Pesanan - Mobile App",
   "data-detail-transaksi": "Detail Transaksi - Mobile App",   // ← tambah
   "data-pembelian": "Data Pembelian - Mobile App",
+  "data-pembelian-form": "Form Pembelian - Mobile App",
+  "data-pembelian-detail": "Detail Pembelian - Mobile App",   // ← TAMBAH
 };
 
 async function muat(id, file) {
@@ -186,6 +191,8 @@ async function navigateTo(page, opts = { pushState: true }) {
       "data-list-pesanan",   // ← baru
       "data-detail-transaksi",  // ← tambah
       "data-pembelian",   // ← tambah
+      "data-pembelian-form",
+      "data-pembelian-detail",   // ← TAMBAH
     ];
     document.body.classList.toggle(
       "hide-app-chrome",

@@ -33,17 +33,6 @@ function _pembelianFormatTanggalRingkas(ymd) {
   }).format(d);
 }
 
-function _pembelianFormatTanggalJam(iso) {
-  if (!iso) return "-";
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return "-";
-  const tgl = new Intl.DateTimeFormat("id-ID", {
-    day: "numeric", month: "short", year: "numeric"
-  }).format(d);
-  const jam = `${_pembelianPad2(d.getHours())}:${_pembelianPad2(d.getMinutes())}`;
-  return `${tgl} - ${jam}`;
-}
-
 function _pembelianFormatHariTanggal(ymd) {
   const d = _pembelianParseYMD(ymd);
   if (!d) return "-";
@@ -172,7 +161,8 @@ function _renderPembelian() {
       const method = p.method_beli || "tunai";
       const iconClass = method === "qris" ? "fa-qrcode"
         : method === "transfer" ? "fa-building-columns"
-          : "fa-money-bill-wave";
+          : method === "e-wallet" ? "fa-wallet"
+            : "fa-money-bill-wave";
       const totalStr = "Rp " + Number(p.total || 0).toLocaleString("id-ID");
       const deskripsi = escapeHTML(p.deskripsi || "(tanpa deskripsi)");
 
@@ -184,7 +174,7 @@ function _renderPembelian() {
                         </div>
                         <div class="riwayat-card__info">
                             <span class="riwayat-card__kode">${deskripsi}</span>
-                            <span class="riwayat-card__tanggal">${_pembelianFormatTanggalJam(p.tanggal_beli)}</span>
+                            <span class="riwayat-card__tanggal">${_pembelianFormatTanggalRingkas((p.tanggal_beli || "").slice(0, 10))}</span>
                             <span class="riwayat-card__items">${p._totalItems} item</span>
                         </div>
                         <div class="riwayat-card__right">
@@ -193,7 +183,21 @@ function _renderPembelian() {
                         </div>
                     </button>
                     <div class="riwayat-card__body" ${expanded ? "" : "hidden"}>
+                      <div class="pembelian-card__items">
+                        ${p._details.map(d => `
+                          <div class="pembelian-card__item">
+                            <span>${escapeHTML(d.name_item || "")}</span>
+                            <span>${d.qty} ${escapeHTML(d.satuan || "pcs")} x Rp ${Number(d.harga_satuan || 0).toLocaleString("id-ID")}</span>
+                            <span>Rp ${Number(d.total || 0).toLocaleString("id-ID")}</span>
+                          </div>
+                        `).join("")}
+                      </div>
                         <div class="riwayat-card__actions">
+                            <button type="button" class="btn-secondary"
+                                    data-action="pembelian-edit" data-id="${p.id}">
+                                <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                Edit
+                            </button>
                             <button type="button" class="btn-secondary"
                                     data-action="pembelian-detail" data-id="${p.id}">
                                 <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
@@ -275,11 +279,10 @@ if (!window._pembelianBound) {
     const detailBtn = e.target.closest("[data-action='pembelian-detail']");
     if (detailBtn) {
       e.preventDefault();
-      // TODO: implementasi detail pembelian
-      openInfoPopup("Fitur detail pembelian akan diimplementasikan nanti.", {
-        title: "Segera Hadir",
-        icon: "info"
-      });
+      const id = detailBtn.dataset.id || "";
+      const url = `app.html?page=data-pembelian-detail&id=${encodeURIComponent(id)}`;
+      history.pushState({ page: "data-pembelian-detail" }, "", url);
+      navigateTo("data-pembelian-detail", { pushState: false });
       return;
     }
 
@@ -329,11 +332,19 @@ if (!window._pembelianBound) {
     // Tambah pembelian (placeholder)
     if (e.target.closest("[data-action='add-pembelian']")) {
       e.preventDefault();
-      // TODO: navigasi ke form tambah pembelian
-      openInfoPopup("Form tambah pembelian akan diimplementasikan nanti.", {
-        title: "Segera Hadir",
-        icon: "info"
-      });
+      history.pushState({ page: "data-pembelian-form" }, "", "app.html?page=data-pembelian-form");
+      navigateTo("data-pembelian-form", { pushState: false });
+      return;
+    }
+
+    // Tambahkan handler edit pembelian:
+    const editBtn = e.target.closest("[data-action='pembelian-edit']");
+    if (editBtn) {
+      e.preventDefault();
+      const id = editBtn.dataset.id;
+      const url = `app.html?page=data-pembelian-form&mode=edit&id=${encodeURIComponent(id)}`;
+      history.pushState({ page: "data-pembelian-form" }, "", url);
+      navigateTo("data-pembelian-form", { pushState: false });
       return;
     }
 
