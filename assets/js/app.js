@@ -497,8 +497,46 @@ function bindProdukActions() {
 
     if (e.target.closest("[data-action='add-produk']")) {
       e.preventDefault();
-      history.pushState({ page: "data-produk-form" }, "", "app.html?page=data-produk-form");
-      navigateTo("data-produk-form", { pushState: false });
+
+      // ⬇️ CEK KATEGORI DULU — sebelum navigasi ke form
+      db.kategori
+        .filter(function (k) { return !k.deleted_at; })
+        .count()
+        .then(function (jumlah) {
+          if (jumlah === 0) {
+            if (typeof openInfoPopup === "function") {
+              openInfoPopup(
+                "Belum ada kategori produk. Silakan tambahkan kategori terlebih dahulu sebelum menambah produk.",
+                {
+                  title: "Kategori Kosong",
+                  icon: "warning",
+                  button: "Mengerti",
+                  onClose: function () { navigateTo("setting"); }
+                }
+              );
+            } else {
+              alert("Belum ada kategori produk. Silakan tambahkan kategori terlebih dahulu.");
+              navigateTo("setting");
+            }
+            return; // ⬅️ STOP — jangan navigasi ke form
+          }
+
+          // Ada kategori → lanjut ke form
+          history.pushState(
+            { page: "data-produk-form" },
+            "",
+            "app.html?page=data-produk-form"
+          );
+          navigateTo("data-produk-form", { pushState: false });
+        })
+        .catch(function (err) {
+          console.error("[produk] Gagal cek kategori:", err);
+          openInfoPopup("Gagal memeriksa kategori: " + (err.message || "Terjadi kesalahan"), {
+            title: "Gagal Memeriksa",
+            icon: "danger"
+          });
+        });
+
       return;
     }
 

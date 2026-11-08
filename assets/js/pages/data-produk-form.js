@@ -247,6 +247,7 @@ async function initDataProdukForm() {
   resetDropify();
 
   /* ----- Load kategori ----- */
+  let kategoriAktif = [];
   try {
     const kats = await db.kategori
       .filter(function (k) { return !k.deleted_at; })
@@ -254,6 +255,8 @@ async function initDataProdukForm() {
     kats.sort(function (a, b) {
       return (a.name || "").localeCompare(b.name || "");
     });
+    kategoriAktif = kats;
+
     if (inputKategori) {
       inputKategori.innerHTML = '<option value="">-- Pilih kategori --</option>' +
         kats.map(function (k) {
@@ -263,6 +266,34 @@ async function initDataProdukForm() {
     }
   } catch (err) {
     console.error("[produk-form] Gagal load kategori:", err);
+  }
+
+  /* ⬇️ SAFETY NET: kalau user masuk langsung via URL & belum ada kategori ----- */
+  const paramsAwal = new URLSearchParams(window.location.search);
+  const modeAwal = paramsAwal.get("mode") === "edit" ? "edit" : "add";
+
+  if (modeAwal === "add" && kategoriAktif.length === 0) {
+    // Sembunyikan seluruh section form agar tidak sempat terlihat user
+    const pageEl = document.querySelector(".page--produk-form");
+    if (pageEl) pageEl.style.display = "none";
+
+    const doRedirect = function () { navigateTo("setting"); };
+
+    if (typeof openInfoPopup === "function") {
+      openInfoPopup(
+        "Belum ada kategori produk. Silakan tambahkan kategori terlebih dahulu sebelum menambah produk.",
+        {
+          title: "Kategori Kosong",
+          icon: "warning",
+          button: "Mengerti",
+          onClose: doRedirect
+        }
+      );
+    } else {
+      alert("Belum ada kategori produk. Silakan tambahkan kategori terlebih dahulu.");
+      doRedirect();
+    }
+    return; // ⬅️ hentikan init, jangan pasang handler submit
   }
 
   /* ----- Mode edit? ----- */
