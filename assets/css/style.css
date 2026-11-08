@@ -4443,3 +4443,16 @@ body.page-is-order .app-header__actions {
   gap: 6px;
   justify-content: flex-end;
 }
+
+
+.riwayat-card__kasir {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: #7c3aed;
+  font-weight: 600;
+}
+
+.riwayat-card__kasir i {
+  font-size: 9px;
+}

@@ -103,21 +103,40 @@ function _formatHariTanggal(ymd) {
 
 /* ---------- Load data ---------- */
 async function _loadRiwayat() {
-    const userId = sessionStorage.getItem("login");
-    if (!userId) return [];
+  // ⬇️ TIDAK perlu filter id_user — tampilkan SEMUA transaksi lunas
+  const rows = await db.penjualan
+    .filter(p => !p.deleted_at && p.status === 1)
+    .toArray();
 
-    const rows = await db.penjualan
-        .filter(p => !p.deleted_at && p.status === 1 && p.id_user === userId)
-        .toArray();
+  // Kumpulkan semua id_user untuk ditampilkan pemiliknya (opsional)
+  const userIdSet = {};
+  rows.forEach(function (p) {
+    if (p.id_user) userIdSet[p.id_user] = true;
+  });
 
-    for (const p of rows) {
-        p._details = await db.penjualan_detail
-            .where("penjualan").equals(p.id)
-            .filter(d => !d.deleted_at)
-            .toArray();
-        p._totalItems = p._details.reduce((s, d) => s + (d.qty || 0), 0);
+  // Load map user (untuk menampilkan nama kasir/pemilik transaksi)
+  const userMap = {};
+  try {
+    const userIds = Object.keys(userIdSet);
+    if (userIds.length > 0) {
+      const users = await db.user.where("id").anyOf(userIds).toArray();
+      users.forEach(function (u) { userMap[u.id] = u; });
     }
-    return rows;
+  } catch (e) {
+    console.warn("[riwayat] Gagal load user map:", e);
+  }
+
+  for (const p of rows) {
+    p._details = await db.penjualan_detail
+      .where("penjualan").equals(p.id)
+      .filter(d => !d.deleted_at)
+      .toArray();
+    p._totalItems = p._details.reduce((s, d) => s + (d.qty || 0), 0);
+
+    // ⬇️ Tempelkan info user (kasir) ke tiap penjualan
+    p._user = userMap[p.id_user] || null;
+  }
+  return rows;
 }
 
 /* ---------- Render ---------- */
@@ -174,6 +193,14 @@ function _renderRiwayat() {
                 : method === "transfer" ? "fa-building-columns"
                     : "fa-money-bill-wave";
             const totalStr = "Rp " + Number(p.total_bayar || 0).toLocaleString("id-ID");
+          // ⬇️ Info kasir (pemilik transaksi)
+          const kasir = p._user
+            ? (p._user.name || p._user.username || "-")  // ⬅️ name dulu
+            : "-";
+          const kasirHTML = `
+                            <span class="riwayat-card__kasir">
+                                <i class="fa-solid fa-user" aria-hidden="true"></i>${escapeHTML(kasir)}
+                            </span>`;
 
             return `
                 <div class="riwayat-card${expanded ? " is-open" : ""}" data-id="${p.id}">
@@ -184,7 +211,7 @@ function _renderRiwayat() {
                         <div class="riwayat-card__info">
                             <span class="riwayat-card__kode">${escapeHTML(p.kode || "-")}</span>
                             <span class="riwayat-card__tanggal">${_formatTanggalJam(p.tanggal_jual)}</span>
-                            <span class="riwayat-card__items">${p._totalItems} item</span>
+                            <span class="riwayat-card__items">${p._totalItems} item &middot; ${kasirHTML}</span>
                         </div>
                         <div class="riwayat-card__right">
                             <span class="riwayat-card__total">${totalStr}</span>

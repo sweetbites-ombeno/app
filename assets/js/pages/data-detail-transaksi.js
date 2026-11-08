@@ -30,12 +30,12 @@ function _methodLabel(method) {
 async function _loadDetailTransaksi(id) {
     if (!id) return null;
 
+    // ⬇️ userId hanya untuk validasi sesi login, bukan untuk filter data
     const userId = sessionStorage.getItem("login");
     if (!userId) return null;
 
     const p = await db.penjualan.get(id);
     if (!p || p.deleted_at) return null;
-    if (p.id_user !== userId) return null;
 
     const details = await db.penjualan_detail
         .where("penjualan").equals(id)
