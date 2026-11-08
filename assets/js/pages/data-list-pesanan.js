@@ -153,6 +153,13 @@ function _renderListPesanan() {
 
 /* ---------- Bayar dari List ---------- */
 async function _bayarDariList(id) {
+    // ⬇️ Cek ulang setelah update untuk deteksi race condition
+    const afterUpdate = await db.penjualan.get(id);
+    if (!afterUpdate || afterUpdate.status !== 0) {
+      alert("Pesanan sudah diproses di tempat lain.");
+      return;
+    }
+
     // Cek cart
     const cart = getCart();
     const totalCart = Object.keys(cart).reduce((s, k) => s + (cart[k] || 0), 0);
@@ -162,11 +169,12 @@ async function _bayarDariList(id) {
     }
 
     const userId = sessionStorage.getItem("login");
+    if (!userId) { alert("Sesi login habis."); return; }
+    // ⬇️ TAMBAH: cek kepemilikan SEBELUM apa pun
     const p = await db.penjualan.get(id);
-    if (!p || p.status !== 2 || p.id_user !== userId) {
-        alert("Pesanan tidak ditemukan.");
-        return;
-    }
+    if (!p || p.deleted_at) { alert("Pesanan tidak ditemukan."); return; }
+    if (p.id_user !== userId) { alert("Pesanan bukan milik akun ini."); return; }
+    if (p.status !== 2) { alert("Pesanan sudah diproses."); return; }
 
     // Ubah status ke 0 (draft aktif)
     const now = new Date().toISOString();
@@ -211,20 +219,29 @@ async function _bayarDariList(id) {
 
 /* ---------- Hapus dari List (HARD DELETE) ---------- */
 async function _hapusDariList(id) {
-    try {
-        await db.transaction("rw", db.penjualan, db.penjualan_detail, async function () {
-            const details = await db.penjualan_detail
-                .where("penjualan").equals(id).toArray();
-            if (details.length > 0) {
-                await db.penjualan_detail.bulkDelete(details.map(d => d.id));
-            }
-            await db.penjualan.delete(id);
-        });
-        return true;
-    } catch (err) {
-        console.error("[list-pesanan] hapus:", err);
-        return false;
-    }
+  const userId = sessionStorage.getItem("login");
+  if (!userId) return false;
+
+  try {
+    // ⬇️ Cek kepemilikan SEBELUM delete
+    const p = await db.penjualan.get(id);
+    if (!p || p.deleted_at) return false;
+    if (p.status !== 2) return false;         // hanya draft simpan yang bisa dihapus
+    if (p.id_user !== userId) return false;   // hanya milik user ini
+
+    await db.transaction("rw", db.penjualan, db.penjualan_detail, async function () {
+      const details = await db.penjualan_detail
+        .where("penjualan").equals(id).toArray();
+      if (details.length > 0) {
+        await db.penjualan_detail.bulkDelete(details.map(d => d.id));
+      }
+      await db.penjualan.delete(id);
+    });
+    return true;
+  } catch (err) {
+    console.error("[list-pesanan] hapus:", err);
+    return false;
+  }
 }
 
 /* ---------- Event Delegation ---------- */
@@ -247,19 +264,27 @@ if (!window._listPesananBound) {
         // Hapus
         const del = e.target.closest("[data-action='lp-delete']");
         if (del) {
-            e.preventDefault();
-            const id = del.dataset.id;
-            const name = del.dataset.name || "pesanan ini";
-            if (!confirm(`Hapus pesanan "${name}" secara permanen?`)) return;
-            const ok = await _hapusDariList(id);
-            if (ok) {
-                _listPesananCache = _listPesananCache.filter(p => p.id !== id);
-                delete _listPesananExpanded[id];
-                _renderListPesanan();
+          e.preventDefault();
+          const id = del.dataset.id;
+          const name = del.dataset.name || "pesanan ini";
+          if (!confirm(`Hapus pesanan "${name}" secara permanen?`)) return;
+          const ok = await _hapusDariList(id);
+          if (ok) {
+            _listPesananCache = _listPesananCache.filter(p => p.id !== id);
+            delete _listPesananExpanded[id];
+            _renderListPesanan();
+          } else {
+            // ⬇️ Ganti alert() dengan openInfoPopup untuk konsistensi
+            if (typeof openInfoPopup === "function") {
+              openInfoPopup(
+                "Pesanan tidak ditemukan atau bukan milik akun ini.",
+                { title: "Akses Ditolak", icon: "danger", button: "Mengerti" }
+              );
             } else {
-                alert("Gagal menghapus pesanan.");
+              alert("Gagal menghapus pesanan.");
             }
-            return;
+          }
+          return;
         }
 
         // Bayar

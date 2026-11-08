@@ -70,6 +70,8 @@ async function logout() {
   } catch (e) { }
 
   sessionStorage.removeItem("login");
+  // ⬇️ Tambah: reset badge visual
+  if (typeof updateNavCartBadge === "function") updateNavCartBadge();
   location.replace(HALAMAN_LOGIN);
 }
 
