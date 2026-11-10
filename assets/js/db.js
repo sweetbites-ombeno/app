@@ -13,7 +13,7 @@ db.version(1).stores({
 });
 
 // penjelasan
-// status penjualan = (0 : menuggu pembayaran, 1 : lunas, 2:  simpan pesanan, 3:batal)
+// status penjualan = (0 : menuggu pembayaran, 1 : lunas, 2:  simpan pesanan, 3:refund)
 // untuk id_customer, name_customer, telp_customer penjualan default cari dari customer yang namanya = 'Umum'
 // kode penjualan diisi dengan format S-username-tanggaljammenitdetik contoh S-admin-20261124191230
 // method_bayar = 'tunai', 'qris', 'transfer'
