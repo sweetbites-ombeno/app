@@ -1,30 +1,14 @@
 /* ============================================
    HALAMAN RIWAYAT TRANSAKSI
-   Filter: hari ini / minggu ini / bulan ini / pilih tanggal
    ============================================ */
 
 let _riwayatCache = [];
-let _riwayatFilter = "hari-ini"; // hari-ini | minggu-ini | bulan-ini | custom
+let _riwayatFilter = "hari-ini";
 let _riwayatTanggalAwal = "";
 let _riwayatTanggalAkhir = "";
 let _riwayatExpanded = {};
 
-/* ---------- Helper: update label badge Pilih Tanggal ---------- */
-function _updateBadgePilihTanggal() {
-    const badge = document.getElementById("badgePilihTanggal");
-    if (!badge) return;
-
-    // Kalau filter aktif adalah custom DAN ada rentang → tampilkan rentang
-    if (_riwayatFilter === "custom" && _riwayatTanggalAwal && _riwayatTanggalAkhir) {
-        const awal = _formatTanggalRingkas(_riwayatTanggalAwal);
-        const akhir = _formatTanggalRingkas(_riwayatTanggalAkhir);
-        badge.textContent = `${awal} - ${akhir}`;
-    } else {
-        badge.textContent = "Pilih Tanggal";
-    }
-}
-
-/* ---------- Helper tanggal ---------- */
+/* ---------- Helper tanggal (tidak berubah) ---------- */
 function _pad2(n) { return String(n).padStart(2, "0"); }
 
 function _toYMD(d) {
@@ -37,41 +21,6 @@ function _parseYMD(str) {
     if (parts.length !== 3) return null;
     const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
     return isNaN(d.getTime()) ? null : d;
-}
-
-/** Rentang tanggal sesuai filter aktif */
-function _getRentangFilter() {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-    if (_riwayatFilter === "hari-ini") {
-        return { awal: _toYMD(today), akhir: _toYMD(today), label: "Pendapatan Hari ini" };
-    }
-
-    if (_riwayatFilter === "minggu-ini") {
-        const day = today.getDay(); // 0=Min
-        const diffKeSenin = day === 0 ? 6 : day - 1;
-        const senin = new Date(today);
-        senin.setDate(today.getDate() - diffKeSenin);
-        const minggu = new Date(senin);
-        minggu.setDate(senin.getDate() + 6);
-        return { awal: _toYMD(senin), akhir: _toYMD(minggu), label: "Pendapatan Minggu ini" };
-    }
-
-    if (_riwayatFilter === "bulan-ini") {
-        const awal = new Date(today.getFullYear(), today.getMonth(), 1);
-        const akhir = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        return { awal: _toYMD(awal), akhir: _toYMD(akhir), label: "Pendapatan Bulan ini" };
-    }
-
-    // custom
-    const awalStr = _riwayatTanggalAwal || _toYMD(today);
-    const akhirStr = _riwayatTanggalAkhir || _toYMD(today);
-    return {
-        awal: awalStr,
-        akhir: akhirStr,
-        label: `Pendapatan ${_formatTanggalRingkas(awalStr)} - ${_formatTanggalRingkas(akhirStr)}`
-    };
 }
 
 function _formatTanggalRingkas(ymd) {
@@ -101,42 +50,81 @@ function _formatHariTanggal(ymd) {
     }).format(d);
 }
 
-/* ---------- Load data ---------- */
-async function _loadRiwayat() {
-  // ⬇️ TIDAK perlu filter id_user — tampilkan SEMUA transaksi lunas
-  const rows = await db.penjualan
-    .filter(p => !p.deleted_at && p.status === 1)
-    .toArray();
+function _getRentangFilter() {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-  // Kumpulkan semua id_user untuk ditampilkan pemiliknya (opsional)
-  const userIdSet = {};
-  rows.forEach(function (p) {
-    if (p.id_user) userIdSet[p.id_user] = true;
-  });
-
-  // Load map user (untuk menampilkan nama kasir/pemilik transaksi)
-  const userMap = {};
-  try {
-    const userIds = Object.keys(userIdSet);
-    if (userIds.length > 0) {
-      const users = await db.user.where("id").anyOf(userIds).toArray();
-      users.forEach(function (u) { userMap[u.id] = u; });
+    if (_riwayatFilter === "hari-ini") {
+        return { awal: _toYMD(today), akhir: _toYMD(today), label: "Pendapatan Hari ini" };
     }
-  } catch (e) {
-    console.warn("[riwayat] Gagal load user map:", e);
-  }
+    if (_riwayatFilter === "minggu-ini") {
+        const day = today.getDay();
+        const diffKeSenin = day === 0 ? 6 : day - 1;
+        const senin = new Date(today);
+        senin.setDate(today.getDate() - diffKeSenin);
+        const minggu = new Date(senin);
+        minggu.setDate(senin.getDate() + 6);
+        return { awal: _toYMD(senin), akhir: _toYMD(minggu), label: "Pendapatan Minggu ini" };
+    }
+    if (_riwayatFilter === "bulan-ini") {
+        const awal = new Date(today.getFullYear(), today.getMonth(), 1);
+        const akhir = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        return { awal: _toYMD(awal), akhir: _toYMD(akhir), label: "Pendapatan Bulan ini" };
+    }
+    const awalStr = _riwayatTanggalAwal || _toYMD(today);
+    const akhirStr = _riwayatTanggalAkhir || _toYMD(today);
+    return {
+        awal: awalStr,
+        akhir: akhirStr,
+        label: `Pendapatan ${_formatTanggalRingkas(awalStr)} - ${_formatTanggalRingkas(akhirStr)}`
+    };
+}
 
-  for (const p of rows) {
-    p._details = await db.penjualan_detail
-      .where("penjualan").equals(p.id)
-      .filter(d => !d.deleted_at)
-      .toArray();
-    p._totalItems = p._details.reduce((s, d) => s + (d.qty || 0), 0);
+/* ---------- Update label badge Pilih Tanggal ---------- */
+function _updateBadgePilihTanggal() {
+    const badge = document.getElementById("badgePilihTanggal");
+    if (!badge) return;
 
-    // ⬇️ Tempelkan info user (kasir) ke tiap penjualan
-    p._user = userMap[p.id_user] || null;
-  }
-  return rows;
+    if (_riwayatFilter === "custom" && _riwayatTanggalAwal && _riwayatTanggalAkhir) {
+        const awal = _formatTanggalRingkas(_riwayatTanggalAwal);
+        const akhir = _formatTanggalRingkas(_riwayatTanggalAkhir);
+        badge.textContent = `${awal} - ${akhir}`;
+    } else {
+        badge.textContent = "Pilih Tanggal";
+    }
+}
+
+/* ---------- Load data: status 1 (lunas) DAN status 3 (refund) ---------- */
+async function _loadRiwayat() {
+    const rows = await db.penjualan
+        .filter(p => !p.deleted_at && (p.status === 1 || p.status === 3))
+        .toArray();
+
+    const userIdSet = {};
+    rows.forEach(function (p) {
+        if (p.id_user) userIdSet[p.id_user] = true;
+    });
+
+    const userMap = {};
+    try {
+        const userIds = Object.keys(userIdSet);
+        if (userIds.length > 0) {
+            const users = await db.user.where("id").anyOf(userIds).toArray();
+            users.forEach(function (u) { userMap[u.id] = u; });
+        }
+    } catch (e) {
+        console.warn("[riwayat] Gagal load user map:", e);
+    }
+
+    for (const p of rows) {
+        p._details = await db.penjualan_detail
+            .where("penjualan").equals(p.id)
+            .filter(d => !d.deleted_at)
+            .toArray();
+        p._totalItems = p._details.reduce((s, d) => s + (d.qty || 0), 0);
+        p._user = userMap[p.id_user] || null;
+    }
+    return rows;
 }
 
 /* ---------- Render ---------- */
@@ -150,23 +138,24 @@ function _renderRiwayat() {
 
     const rentang = _getRentangFilter();
 
-    // Filter berdasarkan tanggal_jual (YYYY-MM-DD prefix)
     const filtered = _riwayatCache.filter(function (p) {
         const tgl = (p.tanggal_jual || "").slice(0, 10);
         if (!tgl) return false;
         return tgl >= rentang.awal && tgl <= rentang.akhir;
     });
 
-    // Sort: tanggal_jual terbesar dulu
     filtered.sort(function (a, b) {
         return (b.tanggal_jual || "").localeCompare(a.tanggal_jual || "");
     });
 
-    // Summary
-    const total = filtered.reduce((s, p) => s + (p.total_bayar || 0), 0);
+    // ⬇️ Summary: hitung pendapatan HANYA dari status 1 (lunas)
+    const totalLunas = filtered
+        .filter(function (p) { return p.status === 1; })
+        .reduce(function (s, p) { return s + (p.total_bayar || 0); }, 0);
+
     if (summaryLabel) summaryLabel.textContent = rentang.label;
     if (summaryCount) summaryCount.textContent = `Ada ${filtered.length} transaksi`;
-    if (summaryTotal) summaryTotal.textContent = "Rp " + total.toLocaleString("id-ID");
+    if (summaryTotal) summaryTotal.textContent = "Rp " + totalLunas.toLocaleString("id-ID");
 
     if (filtered.length === 0) {
         listEl.innerHTML = "";
@@ -175,7 +164,6 @@ function _renderRiwayat() {
     }
     if (emptyEl) emptyEl.style.display = "none";
 
-    // Group by date (YYYY-MM-DD)
     const groups = {};
     const order = [];
     filtered.forEach(function (p) {
@@ -188,29 +176,40 @@ function _renderRiwayat() {
         const items = groups[ymd];
         const cardsHTML = items.map(function (p) {
             const expanded = !!_riwayatExpanded[p.id];
+            const isRefund = p.status === 3;
             const method = p.method_bayar || "tunai";
             const iconClass = method === "qris" ? "fa-qrcode"
                 : method === "transfer" ? "fa-building-columns"
                     : "fa-money-bill-wave";
             const totalStr = "Rp " + Number(p.total_bayar || 0).toLocaleString("id-ID");
-          // ⬇️ Info kasir (pemilik transaksi)
-          const kasir = p._user
-            ? (p._user.name || p._user.username || "-")  // ⬅️ name dulu
-            : "-";
-          const kasirHTML = `
-                            <span class="riwayat-card__kasir">
-                                <i class="fa-solid fa-user" aria-hidden="true"></i>${escapeHTML(kasir)}
-                            </span>`;
+
+            const kasir = p._user
+                ? (p._user.name || p._user.username || "-")
+                : "-";
+            const kasirHTML = `
+                <span class="riwayat-card__kasir">
+                    <i class="fa-solid fa-user" aria-hidden="true"></i>${escapeHTML(kasir)}
+                </span>`;
+
+            // ⬇️ Badge refund di samping tanggal
+            const refundBadge = isRefund
+                ? `<span class="riwayat-refund-badge">
+                       <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Refund
+                   </span>`
+                : "";
 
             return `
-                <div class="riwayat-card${expanded ? " is-open" : ""}" data-id="${p.id}">
+                <div class="riwayat-card${expanded ? " is-open" : ""}${isRefund ? " is-refund" : ""}" data-id="${p.id}">
                     <button type="button" class="riwayat-card__head" data-action="riwayat-toggle" data-id="${p.id}">
                         <div class="riwayat-card__icon riwayat-card__icon--${escapeHTML(method)}">
                             <i class="fa-solid ${iconClass}" aria-hidden="true"></i>
                         </div>
                         <div class="riwayat-card__info">
                             <span class="riwayat-card__kode">${escapeHTML(p.kode || "-")}</span>
-                            <span class="riwayat-card__tanggal">${_formatTanggalJam(p.tanggal_jual)}</span>
+                            <span class="riwayat-card__tanggal riwayat-card__tanggal-row">
+                                ${_formatTanggalJam(p.tanggal_jual)}
+                                ${refundBadge}
+                            </span>
                             <span class="riwayat-card__items">${p._totalItems} item &middot; ${kasirHTML}</span>
                         </div>
                         <div class="riwayat-card__right">

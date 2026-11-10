@@ -1,8 +1,6 @@
 <section class="page page--detail-transaksi">
 
-    <!-- ============================================
-         HEADER CUSTOM (back + judul + kode)
-         ============================================ -->
+    <!-- HEADER CUSTOM (back + judul + kode) -->
     <div class="page-header page-header--simple">
         <div class="page-header__top">
             <a href="app.html?page=riwayat" class="page-header__btn" id="btnBackDetail" aria-label="Kembali">
@@ -18,25 +16,22 @@
         </div>
     </div>
 
-    <!-- ============================================
-         CARD STATUS LUNAS
-         ============================================ -->
+    <!-- CARD STATUS -->
     <div class="detail-status-card" id="detailStatusCard">
         <div class="detail-status-card__left">
-            <div class="detail-status-card__icon">
+            <div class="detail-status-card__icon" id="detailStatusIcon">
                 <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
             </div>
             <div class="detail-status-card__text">
-                <span class="detail-status-card__title">Pembayaran Lunas</span>
+                <span class="detail-status-card__title" id="detailStatusTitle">Pembayaran Lunas</span>
                 <span class="detail-status-card__date" id="detailTanggal">-</span>
+                <span class="detail-status-card__reason" id="detailAlasan" hidden></span>
             </div>
         </div>
         <span class="detail-status-card__total" id="detailTotal">Rp 0</span>
     </div>
 
-    <!-- ============================================
-         INFO ORDER
-         ============================================ -->
+    <!-- INFO ORDER -->
     <h2 class="detail-section-title">Info Order</h2>
     <div class="detail-info-card" id="detailInfoCard">
         <div class="detail-row">
@@ -50,8 +45,8 @@
         <div class="detail-row">
             <span class="detail-row__label">Metode Pembayaran</span>
             <span class="detail-row__value" id="detailMethodWrap">
-                <button type="button" class="detail-bukti-btn" id="detailBuktiBtn" hidden aria-label="Lihat bukti pembayaran"
-                    title="Lihat bukti pembayaran">
+                <button type="button" class="detail-bukti-btn" id="detailBuktiBtn" hidden
+                    aria-label="Lihat bukti pembayaran" title="Lihat bukti pembayaran">
                     <i class="fa-solid fa-image" aria-hidden="true"></i>
                 </button>
                 <span id="detailMethod">-</span>
@@ -59,15 +54,11 @@
         </div>
     </div>
 
-    <!-- ============================================
-         ITEM
-         ============================================ -->
+    <!-- ITEM -->
     <h2 class="detail-section-title" id="detailItemTitle">Item (0)</h2>
     <div class="detail-items-card" id="detailItemsCard"></div>
 
-    <!-- ============================================
-         RINCIAN BIAYA
-         ============================================ -->
+    <!-- RINCIAN BIAYA -->
     <h2 class="detail-section-title">Rincian</h2>
     <div class="detail-info-card" id="detailRincianCard">
         <div class="detail-row">
@@ -84,12 +75,93 @@
         </div>
     </div>
 
-    <!-- ============================================
-         TOMBOL CETAK
-         ============================================ -->
-    <button type="button" class="btn-primary detail-cetak-btn" id="btnCetakStruk">
-        <i class="fa-solid fa-print" aria-hidden="true"></i>
-        Cetak Struk
-    </button>
+    <!-- TOMBOL AKSI: Refund + Cetak -->
+    <div class="detail-action-row" id="detailActionRow">
+        <button type="button" class="btn-danger detail-refund-btn" id="btnRefundTransaksi">
+            <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+            Refund
+        </button>
+        <button type="button" class="btn-primary detail-cetak-btn" id="btnCetakStruk">
+            <i class="fa-solid fa-print" aria-hidden="true"></i>
+            Cetak Struk
+        </button>
+    </div>
 
 </section>
+
+<!-- ============================================
+     POPUP REFUND TRANSAKSI
+     ============================================ -->
+<div class="pay-modal" id="refundModal" hidden>
+    <div class="pay-modal__box refund-modal__box">
+        <h2 class="pay-modal__title">Refund Transaksi</h2>
+        <p class="refund-modal__subtitle">Pengembalian Penuh - tidak dapat dibatalkan</p>
+
+        <!-- Card rincian -->
+        <div class="refund-detail-card">
+            <div class="refund-detail-row">
+                <span class="refund-detail-row__label">Kode Transaksi</span>
+                <span class="refund-detail-row__value" id="refundKode">-</span>
+            </div>
+            <div class="refund-detail-row">
+                <span class="refund-detail-row__label">Tanggal</span>
+                <span class="refund-detail-row__value" id="refundTanggal">-</span>
+            </div>
+            <div class="refund-detail-row">
+                <span class="refund-detail-row__label">Jumlah Item</span>
+                <span class="refund-detail-row__value" id="refundJumlahItem">0 item</span>
+            </div>
+            <div class="refund-detail-row">
+                <span class="refund-detail-row__label">Metode Pembayaran</span>
+                <span class="refund-detail-row__value" id="refundMetode">-</span>
+            </div>
+            <div class="refund-detail-row refund-detail-row--total">
+                <span class="refund-detail-row__label">Total Dikembalikan</span>
+                <span class="refund-detail-row__value" id="refundTotal">Rp 0</span>
+            </div>
+        </div>
+
+        <!-- Label Alasan Refund -->
+        <label class="refund-section-label">Alasan Refund <span class="refund-required">*</span></label>
+        <div class="refund-reason-card" id="refundReasonCard">
+            <label class="refund-reason-item">
+                <input type="radio" name="refundReason" value="Pesanan tidak sesuai">
+                <span>Pesanan tidak sesuai</span>
+            </label>
+            <label class="refund-reason-item">
+                <input type="radio" name="refundReason" value="Pelanggan membatalkan">
+                <span>Pelanggan membatalkan</span>
+            </label>
+            <label class="refund-reason-item">
+                <input type="radio" name="refundReason" value="Item habis / tidak tersedia">
+                <span>Item habis / tidak tersedia</span>
+            </label>
+            <label class="refund-reason-item">
+                <input type="radio" name="refundReason" value="Lainnya">
+                <span>Lainnya (jelaskan di catatan)</span>
+            </label>
+        </div>
+
+        <!-- Catatan Lainnya -->
+        <label class="refund-section-label" for="refundCatatan">Catatan Lainnya</label>
+        <textarea class="refund-textarea" id="refundCatatan" rows="3" placeholder="Jelaskan alasan refund..."
+            disabled></textarea>
+
+        <!-- Warning card -->
+        <div class="refund-warning-card">
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            <span>Setelah refund maka pendapatan akan otomatis berkurang</span>
+        </div>
+
+        <p class="save-order-error" id="refundError" role="alert"></p>
+
+        <!-- Actions -->
+        <div class="pay-modal__actions">
+            <button type="button" class="btn-secondary" id="btnRefundBatal">Batal</button>
+            <button type="button" class="btn-danger" id="btnRefundConfirm" disabled>
+                <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+                Refund
+            </button>
+        </div>
+    </div>
+</div>

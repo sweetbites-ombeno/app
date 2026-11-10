@@ -4456,3 +4456,287 @@ body.page-is-order .app-header__actions {
 .riwayat-card__kasir i {
   font-size: 9px;
 }
+
+/* ============================================
+   DETAIL TRANSAKSI — Tombol Aksi (Refund + Cetak)
+   ============================================ */
+.detail-action-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    margin-bottom: 8px;
+}
+
+.detail-action-row .btn-danger,
+.detail-action-row .btn-primary {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 50px;
+    margin-top: 0;
+    font-size: 14px;
+}
+
+.detail-refund-btn {
+    background-color: #dc2626;
+}
+
+.detail-refund-btn:hover {
+    background-color: #b91c1c;
+}
+
+.detail-refund-btn:active {
+    transform: scale(0.98);
+    background-color: #991b1b;
+}
+
+/* ============================================
+   STATUS CARD — Varian REFUND
+   ============================================ */
+.detail-status-card.is-refund {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.detail-status-card.is-refund .detail-status-card__title {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.detail-status-card__reason {
+    font-size: 11.5px;
+    opacity: 0.92;
+    line-height: 1.3;
+    display: block;
+    margin-top: 2px;
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* ============================================
+   POPUP REFUND
+   ============================================ */
+.refund-modal__box {
+    max-width: 400px;
+    padding: 22px 18px 18px;
+    max-height: 92vh;
+    overflow-y: auto;
+}
+
+.refund-modal__subtitle {
+    font-size: 12.5px;
+    color: var(--color-text-muted);
+    text-align: center;
+    margin-top: -10px;
+    margin-bottom: 14px;
+    font-weight: 500;
+}
+
+/* Card rincian */
+.refund-detail-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    background-color: #f8fafc;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    margin-bottom: 14px;
+}
+
+.refund-detail-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+}
+
+.refund-detail-row__label {
+    color: var(--color-text-muted);
+    font-weight: 500;
+    flex-shrink: 0;
+    max-width: 55%;
+}
+
+.refund-detail-row__value {
+    color: var(--color-text);
+    font-weight: 600;
+    text-align: right;
+    word-break: break-word;
+    min-width: 0;
+}
+
+.refund-detail-row--total {
+    padding-top: 8px;
+    border-top: 1px dashed var(--color-border);
+    margin-top: 4px;
+}
+
+.refund-detail-row--total .refund-detail-row__value {
+    color: #dc2626;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+/* Label section */
+.refund-section-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 14px 0 6px;
+    padding-left: 2px;
+}
+
+.refund-required {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+/* Card alasan refund */
+.refund-reason-card {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.refund-reason-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 13.5px;
+    color: var(--color-text);
+    transition: background-color var(--transition);
+}
+
+.refund-reason-item:last-child {
+    border-bottom: none;
+}
+
+.refund-reason-item:hover {
+    background-color: #f8fafc;
+}
+
+.refund-reason-item input[type="radio"] {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    accent-color: #dc2626;
+    cursor: pointer;
+    margin: 0;
+}
+
+.refund-reason-item span {
+    flex: 1 1 auto;
+    min-width: 0;
+    line-height: 1.35;
+}
+
+/* Textarea catatan */
+.refund-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--color-text);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    outline: none;
+    resize: vertical;
+    transition: border-color var(--transition), box-shadow var(--transition),
+        background-color var(--transition);
+}
+
+.refund-textarea:disabled {
+    background-color: #f1f5f9;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.refund-textarea:not(:disabled):focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.refund-textarea:not(:disabled)::placeholder {
+    color: #9ca3af;
+}
+
+/* Warning card merah */
+.refund-warning-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    margin-top: 14px;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-md);
+    color: #b91c1c;
+    font-size: 12.5px;
+    line-height: 1.45;
+    font-weight: 500;
+}
+
+.refund-warning-card i {
+    flex-shrink: 0;
+    font-size: 16px;
+    margin-top: 1px;
+}
+
+.refund-warning-card span {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* ============================================
+   RIWAYAT — Card REFUND (merah outline + badge)
+   ============================================ */
+.riwayat-card.is-refund {
+    border-color: #fca5a5;
+    box-shadow: 0 0 0 1px #fecaca, var(--shadow-sm);
+    background-color: #fffafa;
+}
+
+.riwayat-card.is-refund .riwayat-card__kode {
+    color: #b91c1c;
+}
+
+.riwayat-card.is-refund .riwayat-card__total {
+    color: #b91c1c;
+}
+
+.riwayat-card__tanggal-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.riwayat-refund-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background-color: #fee2e2;
+    color: #b91c1c;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    line-height: 1.4;
+}
+
+.riwayat-refund-badge i {
+    font-size: 8px;
+}

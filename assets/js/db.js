@@ -7,7 +7,7 @@ db.version(1).stores({
     produk: 'id, name, kategori, harga_jual, image_base64, id_user, created_at, updated_at, deleted_at',
     pembelian: 'id, deskripsi, total, tempat, tanggal_beli, method_beli, img_beli_base64, id_user, created_at, updated_at, deleted_at',
     pembelian_detail: 'id, pembelian, name_item, qty, satuan, harga_satuan, total, order, created_at, updated_at, deleted_at',
-    penjualan: 'id, kode, total_bayar, uang_diterima, uang_kembalian, id_customer, name_customer, telp_customer, tanggal_jual, tanggal_pesan, status, method_bayar, img_bayar_base64, id_user, created_at, updated_at, deleted_at',
+    penjualan: 'id, kode, total_bayar, uang_diterima, uang_kembalian, id_customer, name_customer, telp_customer, tanggal_jual, tanggal_pesan, status, alasan, method_bayar, img_bayar_base64, id_user, created_at, updated_at, deleted_at',
     penjualan_detail: 'id, penjualan, id_product, name_product, id_kategori, name_kategori, qty, harga_satuan, total, order, created_at, updated_at, deleted_at',
     backup_db: 'id, tanggal, date_now, status, created_at, updated_at, deleted_at',
 });
