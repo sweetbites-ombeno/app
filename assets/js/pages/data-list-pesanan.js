@@ -153,25 +153,9 @@ function _renderListPesanan() {
 
 /* ---------- Bayar dari List ---------- */
 async function _bayarDariList(id) {
-    // ⬇️ Cek ulang setelah update untuk deteksi race condition
-    const afterUpdate = await db.penjualan.get(id);
-    if (!afterUpdate || afterUpdate.status !== 0) {
-      openInfoPopup("Pesanan sudah diproses di tempat lain.", {
-        title: "Sudah Diproses", icon: "warning"
-      });
-      return;
-    }
-
-    // Cek cart
-    const cart = getCart();
-    const totalCart = Object.keys(cart).reduce((s, k) => s + (cart[k] || 0), 0);
-    if (totalCart > 0) {
-      openInfoPopup("Masih ada produk di Keranjang. Selesaikan atau kosongkan dulu.", {
-        title: "Keranjang Tidak Kosong", icon: "warning"
-      });
-      return;
-    }
-
+    // ============================================
+    // 1) VALIDASI SESI & DATA
+    // ============================================
     const userId = sessionStorage.getItem("login");
     if (!userId) {
       openInfoPopup("Sesi login habis. Silakan login ulang.", {
@@ -179,6 +163,7 @@ async function _bayarDariList(id) {
       });
       return;
     }
+
     const p = await db.penjualan.get(id);
     if (!p || p.deleted_at) {
       openInfoPopup("Pesanan tidak ditemukan.", {
@@ -199,48 +184,105 @@ async function _bayarDariList(id) {
       return;
     }
 
+    // ============================================
+    // 2) CEK CART KOSONG
+    // ============================================
+    const cart = getCart();
+    const totalCart = Object.keys(cart).reduce(function (s, k) {
+      return s + (cart[k] || 0);
+    }, 0);
+    if (totalCart > 0) {
+      openInfoPopup("Masih ada produk di Keranjang. Selesaikan atau kosongkan dulu.", {
+        title: "Keranjang Tidak Kosong", icon: "warning"
+      });
+      return;
+    }
+
+    // ============================================
+    // 3) AMBIL DETAIL
+    // ============================================
     const details = await db.penjualan_detail
       .where("penjualan").equals(id)
       .filter(d => !d.deleted_at)
       .toArray();
 
-    // ⬇️ Kembalikan stok dulu (karena akan dikurangi lagi saat bayar)
-    if (typeof _kembalikanStok === "function") {
-      await _kembalikanStok(details);
+    // ============================================
+    // 4) ATOMIC: cek status + kembalikan stok + update status
+    //    Semua dalam SATU transaksi
+    // ============================================
+    const now = new Date().toISOString();
+    let updated = false;
+
+    try {
+      await db.transaction("rw", db.penjualan, db.produk, async function () {
+        // ⬇️ Cek ulang di dalam transaksi (race condition guard)
+        const current = await db.penjualan.get(id);
+        if (!current || current.deleted_at) return;
+        if (current.id_user !== userId) return;
+        if (current.status !== 2) return;
+
+        // ⬇️ Kembalikan stok DALAM transaksi yang sama
+        for (const d of details) {
+          if (!d.id_product) continue;
+          const produk = await db.produk.get(d.id_product);
+          if (!produk || produk.deleted_at) continue;
+          const stokBaru = (Number(produk.stok) || 0) + (Number(d.qty) || 0);
+          await db.produk.update(produk.id, {
+            stok: stokBaru,
+            updated_at: now
+          });
+        }
+
+        // ⬇️ Update status 2 → 0
+        await db.penjualan.update(id, {
+          status: 0,
+          tanggal_jual: "",
+          updated_at: now
+        });
+
+        updated = true;
+      });
+    } catch (err) {
+      console.error("[list-pesanan] Gagal bayar dari list:", err);
+      openInfoPopup("Gagal memproses pembayaran: " + (err.message || "Terjadi kesalahan"), {
+        title: "Gagal Memproses", icon: "danger"
+      });
+      return;
     }
 
-    // Ubah status ke 0 (draft aktif)
-    const now = new Date().toISOString();
-    await db.penjualan.update(id, {
-        status: 0,
-        tanggal_jual: "",
-        updated_at: now
-    });
+    if (!updated) {
+      // Status berubah di antara cek awal & transaksi
+      openInfoPopup("Pesanan sudah diproses di tempat lain.", {
+        title: "Sudah Diproses", icon: "warning"
+      });
+      return;
+    }
 
-    // Set draft id di session agar order.js pakai ini
+    // ============================================
+    // 5) SET SESSION & CART (di luar transaksi DB)
+    // ============================================
     sessionStorage.setItem(_draftOrderKey(), id);
 
-    // ⬇️ TAMBAHKAN: simpan info customer + tanggal asli untuk default saat simpan ulang
     sessionStorage.setItem("orderFromListOriginal", JSON.stringify({
-        id: id,
-        id_customer: p.id_customer || "",
-        name_customer: p.name_customer || "",
-        telp_customer: p.telp_customer || "-",
-        tanggal_pesan: p.tanggal_pesan || ""
+      id: id,
+      id_customer: p.id_customer || "",
+      name_customer: p.name_customer || "",
+      telp_customer: p.telp_customer || "-",
+      tanggal_pesan: p.tanggal_pesan || ""
     }));
 
-    
     const newCart = {};
-    details.forEach(d => {
-        if (d.id_product && d.qty > 0) newCart[d.id_product] = d.qty;
+    details.forEach(function (d) {
+      if (d.id_product && d.qty > 0) {
+        newCart[d.id_product] = (newCart[d.id_product] || 0) + d.qty;
+      }
     });
     saveCart(newCart);
 
-    // Navigasi ke order dengan info customer+tanggal
     sessionStorage.setItem("orderFromList", JSON.stringify({
-        id: id,
-        name_customer: p.name_customer || "",
-        tanggal_pesan: p.tanggal_pesan || "",
+      id: id,
+      name_customer: p.name_customer || "",
+      tanggal_pesan: p.tanggal_pesan || ""
     }));
 
     navigateTo("order");

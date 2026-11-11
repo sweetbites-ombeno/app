@@ -20,6 +20,7 @@ const PAGE_INIT = {
   "data-pembelian": initDataPembelian,
   "data-pembelian-form": initDataPembelianForm,
   "data-pembelian-detail": initDataPembelianDetail,   // ← TAMBAH
+  "data-laporan": initDataLaporan,
 };
 
 const HALAMAN_LOGIN = "index.html";
@@ -116,6 +117,7 @@ const PAGE_TITLES = {
   "data-pembelian": "Data Pembelian - Mobile App",
   "data-pembelian-form": "Form Pembelian - Mobile App",
   "data-pembelian-detail": "Detail Pembelian - Mobile App",   // ← TAMBAH
+  "data-laporan": "Laporan Penjualan & Pembelian - Mobile App",
 };
 
 async function muat(id, file) {
@@ -194,6 +196,7 @@ async function navigateTo(page, opts = { pushState: true }) {
       "data-pembelian",   // ← tambah
       "data-pembelian-form",
       "data-pembelian-detail",   // ← TAMBAH
+      "data-laporan",
     ];
     document.body.classList.toggle(
       "hide-app-chrome",
@@ -371,6 +374,11 @@ function bindSettingActions() {
 
       if (name === "data-produk") {
         navigateTo("data-produk");
+        return;
+      }
+
+      if (name === "data-penjualan-pembelian") {
+        navigateTo("data-laporan");
         return;
       }
 

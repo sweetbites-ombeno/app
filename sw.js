@@ -33,6 +33,8 @@ const PRECACHE_URLS = [
     './assets/js/pages/data-pembelian-form.js',
     './data-pembelian-detail-content.html',      // ← TAMBAH
     './assets/js/pages/data-pembelian-detail.js', // ← TAMBAH
+    './data-laporan-content.html',
+    './assets/js/pages/data-laporan.js',
     // ... file JS halaman lainnya
 ];
 

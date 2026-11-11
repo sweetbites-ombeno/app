@@ -1,0 +1,172 @@
+<section class="page page--laporan">
+
+  <!-- ============================================
+       HEADER CUSTOM
+       ============================================ -->
+  <div class="page-header page-header--simple">
+    <div class="page-header__top">
+      <a href="app.html?page=setting" class="page-header__btn" aria-label="Kembali">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+      </a>
+
+      <div class="page-header__title-wrap">
+        <h1 class="page-header__title">Laporan Penjualan &amp; Pembelian</h1>
+        <p class="page-header__subtitle">Ringkasan pendapatan, pengeluaran, dan detail transaksi</p>
+      </div>
+
+      <span class="page-header__spacer" aria-hidden="true"></span>
+    </div>
+  </div>
+
+  <!-- ============================================
+       FILTER: PENJUALAN (kiri) | PEMBELIAN (kanan)
+       ============================================ -->
+  <div class="laporan-filter-row">
+
+    <!-- Filter Penjualan -->
+    <div class="laporan-filter-col">
+      <label class="laporan-filter-label">
+        <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+        Filter Penjualan
+      </label>
+      <button type="button" class="laporan-filter-badge" id="laporanFilterPenjualan" data-target="penjualan"
+        aria-haspopup="dialog">
+        <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+        <span id="laporanFilterPenjualanText">-</span>
+      </button>
+    </div>
+
+    <!-- Filter Pembelian -->
+    <div class="laporan-filter-col">
+      <label class="laporan-filter-label">
+        <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
+        Filter Pembelian
+      </label>
+      <button type="button" class="laporan-filter-badge" id="laporanFilterPembelian" data-target="pembelian"
+        aria-haspopup="dialog">
+        <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+        <span id="laporanFilterPembelianText">-</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ============================================
+       RINGKASAN
+       ============================================ -->
+  <h2 class="detail-section-title">Ringkasan</h2>
+  <div class="detail-info-card" id="laporanRingkasanCard">
+    <div class="detail-row">
+      <span class="detail-row__label">Pendapatan</span>
+      <span class="detail-row__value detail-row__value--total" id="laporanPendapatan">Rp 0</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-row__label">Pengeluaran</span>
+      <span class="detail-row__value" id="laporanPengeluaran">Rp 0</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-row__label">Item Terjual</span>
+      <span class="detail-row__value" id="laporanItemTerjual">0 item</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-row__label">Keuntungan</span>
+      <span class="detail-row__value detail-row__value--total" id="laporanKeuntungan">Rp 0</span>
+    </div>
+  </div>
+
+  <!-- ============================================
+       DETAIL — TABS
+       ============================================ -->
+  <h2 class="detail-section-title">Detail</h2>
+  <div class="laporan-tabs" role="tablist" aria-label="Detail laporan">
+    <button type="button" class="laporan-tab is-active" data-tab="penjualan" role="tab" aria-selected="true"
+      id="tabPenjualan">
+      <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+      Penjualan
+    </button>
+    <button type="button" class="laporan-tab" data-tab="pembelian" role="tab" aria-selected="false" id="tabPembelian">
+      <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
+      Pembelian
+    </button>
+  </div>
+
+  <!-- Panel Penjualan -->
+  <div class="laporan-panel" id="laporanPanelPenjualan" role="tabpanel" aria-labelledby="tabPenjualan">
+    <div class="laporan-table-wrap">
+      <table class="laporan-table">
+        <thead>
+          <tr>
+            <th>Produk</th>
+            <th class="laporan-table__num">Qty</th>
+            <th class="laporan-table__num">Total</th>
+          </tr>
+        </thead>
+        <tbody id="laporanPenjualanBody">
+          <!-- Dirender JS -->
+        </tbody>
+      </table>
+    </div>
+    <div class="kategori-empty" id="laporanPenjualanEmpty" style="display:none">
+      <i class="fa-solid fa-receipt" aria-hidden="true"></i>
+      <p>Belum ada data penjualan pada periode ini.</p>
+    </div>
+  </div>
+
+  <!-- Panel Pembelian -->
+  <div class="laporan-panel" id="laporanPanelPembelian" role="tabpanel" aria-labelledby="tabPembelian" hidden>
+    <div class="laporan-table-wrap">
+      <table class="laporan-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th class="laporan-table__num">Qty</th>
+            <th class="laporan-table__num">Total</th>
+          </tr>
+        </thead>
+        <tbody id="laporanPembelianBody">
+          <!-- Dirender JS -->
+        </tbody>
+      </table>
+    </div>
+    <div class="kategori-empty" id="laporanPembelianEmpty" style="display:none">
+      <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
+      <p>Belum ada data pembelian pada periode ini.</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- ============================================
+     POPUP FILTER TANGGAL
+     ============================================ -->
+<div class="pay-modal" id="laporanTanggalModal" hidden>
+  <div class="pay-modal__box">
+    <h2 class="pay-modal__title" id="laporanTanggalTitle">Pilih Tanggal</h2>
+
+    <div class="form-group" style="text-align:left">
+      <label for="laporanTanggalAwal">Tanggal Awal</label>
+      <div class="form-group__input">
+        <i class="fa-regular fa-calendar form-group__icon" aria-hidden="true"></i>
+        <input type="date" id="laporanTanggalAwal" name="laporanTanggalAwal">
+      </div>
+    </div>
+
+    <div class="form-group" style="text-align:left">
+      <label for="laporanTanggalAkhir">Tanggal Akhir</label>
+      <div class="form-group__input">
+        <i class="fa-regular fa-calendar form-group__icon" aria-hidden="true"></i>
+        <input type="date" id="laporanTanggalAkhir" name="laporanTanggalAkhir">
+      </div>
+    </div>
+
+    <p class="save-order-error" id="laporanTanggalError" role="alert"></p>
+
+    <div class="pay-modal__actions">
+      <button type="button" class="btn-secondary" id="btnLaporanTanggalBatal">Batal</button>
+      <button type="button" class="btn-primary" id="btnLaporanTanggalTerapkan">
+        <i class="fa-solid fa-check" aria-hidden="true"></i>
+        Terapkan
+      </button>
+    </div>
+  </div>
+</div>

@@ -4776,3 +4776,273 @@ body.page-is-order .app-header__actions {
     color: #b91c1c;
     background-color: #fee2e2;
 }
+
+/* ============================================
+   HALAMAN LAPORAN PENJUALAN & PEMBELIAN
+   ============================================ */
+.page--laporan {
+  animation: fadeInOpacity 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---------- Filter row (2 kolom) ---------- */
+.laporan-filter-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.laporan-filter-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.laporan-filter-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding-left: 2px;
+}
+
+.laporan-filter-label i {
+  font-size: 11px;
+}
+
+.laporan-filter-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition), background-color var(--transition), transform var(--transition);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.laporan-filter-badge:hover {
+  border-color: var(--color-primary);
+  background-color: #f8fafc;
+}
+
+.laporan-filter-badge:active {
+  transform: scale(0.98);
+}
+
+.laporan-filter-badge i {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--color-primary);
+}
+
+.laporan-filter-badge span {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Tabs ---------- */
+.laporan-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 4px;
+  background-color: #f1f5f9;
+  border-radius: var(--radius-md);
+  margin-top: 4px;
+}
+
+.laporan-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  border-radius: 8px;
+  background-color: transparent;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition), box-shadow var(--transition);
+}
+
+.laporan-tab i {
+  font-size: 12px;
+}
+
+.laporan-tab:hover {
+  color: var(--color-primary);
+}
+
+.laporan-tab.is-active {
+  background-color: var(--color-surface);
+  color: var(--color-primary);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.laporan-tab:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.35);
+  outline-offset: 1px;
+}
+
+/* ---------- Panel & Table ---------- */
+.laporan-panel {
+  margin-top: 4px;
+}
+
+.laporan-panel[hidden] {
+  display: none;
+}
+
+.laporan-table-wrap {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.laporan-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.laporan-table thead th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background-color: #f8fafc;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.laporan-table tbody td {
+  padding: 10px 12px;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.laporan-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.laporan-table__num {
+  text-align: right !important;
+  white-space: nowrap;
+}
+
+.laporan-table__total {
+  font-weight: 700;
+  color: #059669;
+}
+
+/* Cell produk (penjualan) */
+.laporan-produk-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.laporan-produk-nama {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.laporan-produk-harga {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* Cell item (pembelian) */
+.laporan-item-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.laporan-item-nama {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.laporan-item-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.laporan-item-tanggal {
+  color: var(--color-text-muted);
+}
+
+.laporan-item-harga {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* Responsive: kolom lebih sempit */
+@media (max-width: 360px) {
+
+  .laporan-table thead th,
+  .laporan-table tbody td {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .laporan-produk-nama,
+  .laporan-item-nama {
+    font-size: 12px;
+  }
+
+  .laporan-produk-harga,
+  .laporan-item-meta {
+    font-size: 10.5px;
+  }
+
+  .laporan-filter-badge {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+}
