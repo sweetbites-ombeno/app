@@ -9,6 +9,52 @@
    - Draft orphan (sisa tab ditutup tanpa logout) dibersihkan saat initApp
    ============================================ */
 
+/* ============================================
+STOK — helper
+============================================ */
+
+/**
+ * Kurangi stok untuk detail penjualan tertentu.
+ * @param {Array} details - array penjualan_detail
+ * @returns {Promise<void>}
+ */
+async function _kurangiStok(details) {
+  if (!details || details.length === 0) return;
+  await db.transaction("rw", db.produk, async function () {
+    for (const d of details) {
+      if (!d.id_product) continue;
+      const produk = await db.produk.get(d.id_product);
+      if (!produk || produk.deleted_at) continue;
+      const stokBaru = Math.max(0, (Number(produk.stok) || 0) - (Number(d.qty) || 0));
+      await db.produk.update(produk.id, {
+        stok: stokBaru,
+        updated_at: new Date().toISOString()
+      });
+    }
+  });
+}
+
+/**
+ * Kembalikan stok untuk detail penjualan tertentu.
+ * @param {Array} details
+ */
+async function _kembalikanStok(details) {
+  if (!details || details.length === 0) return;
+  await db.transaction("rw", db.produk, async function () {
+    for (const d of details) {
+      if (!d.id_product) continue;
+      const produk = await db.produk.get(d.id_product);
+      if (!produk || produk.deleted_at) continue;
+      const stokBaru = (Number(produk.stok) || 0) + (Number(d.qty) || 0);
+      await db.produk.update(produk.id, {
+        stok: stokBaru,
+        updated_at: new Date().toISOString()
+      });
+    }
+  });
+}
+
+
 /* ---------- Helper key per-user ---------- */
 
 function _currentUserId() {
@@ -308,6 +354,17 @@ async function finalizePayment(opts) {
     updated_at: now
   });
 
+  // Kurangi stok (selalu, karena belum dikurangi untuk status 0)
+  try {
+    const details = await db.penjualan_detail
+      .where("penjualan").equals(penjualanId)
+      .filter(d => !d.deleted_at)
+      .toArray();
+    await _kurangiStok(details);
+  } catch (e) {
+    console.warn("[cart-db] gagal kurangi stok:", e);
+  }
+
   sessionStorage.removeItem(_draftOrderKey());
   sessionStorage.removeItem(_cartKey());
 
@@ -411,3 +468,5 @@ window.finalizePayment = finalizePayment;
 window.clearDraftPenjualan = clearDraftPenjualan;
 window.getOrCreateDraftPenjualan = getOrCreateDraftPenjualan;
 window.bersihkanDraftOrphan = bersihkanDraftOrphan;
+window._kurangiStok = _kurangiStok;
+window._kembalikanStok = _kembalikanStok;

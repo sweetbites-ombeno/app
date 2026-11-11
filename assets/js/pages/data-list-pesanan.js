@@ -176,6 +176,16 @@ async function _bayarDariList(id) {
     if (p.id_user !== userId) { alert("Pesanan bukan milik akun ini."); return; }
     if (p.status !== 2) { alert("Pesanan sudah diproses."); return; }
 
+    const details = await db.penjualan_detail
+      .where("penjualan").equals(id)
+      .filter(d => !d.deleted_at)
+      .toArray();
+
+    // ⬇️ Kembalikan stok dulu (karena akan dikurangi lagi saat bayar)
+    if (typeof _kembalikanStok === "function") {
+      await _kembalikanStok(details);
+    }
+
     // Ubah status ke 0 (draft aktif)
     const now = new Date().toISOString();
     await db.penjualan.update(id, {
@@ -196,11 +206,7 @@ async function _bayarDariList(id) {
         tanggal_pesan: p.tanggal_pesan || ""
     }));
 
-    // Isi cart dari detail
-    const details = await db.penjualan_detail
-        .where("penjualan").equals(id)
-        .filter(d => !d.deleted_at)
-        .toArray();
+    
     const newCart = {};
     details.forEach(d => {
         if (d.id_product && d.qty > 0) newCart[d.id_product] = d.qty;
@@ -223,15 +229,21 @@ async function _hapusDariList(id) {
   if (!userId) return false;
 
   try {
-    // ⬇️ Cek kepemilikan SEBELUM delete
     const p = await db.penjualan.get(id);
     if (!p || p.deleted_at) return false;
-    if (p.status !== 2) return false;         // hanya draft simpan yang bisa dihapus
-    if (p.id_user !== userId) return false;   // hanya milik user ini
+    if (p.status !== 2) return false;
+    if (p.id_user !== userId) return false;
+
+    // ⬇️ Ambil detail sebelum delete untuk kembalikan stok
+    const details = await db.penjualan_detail
+      .where("penjualan").equals(id).toArray();
+
+    // ⬇️ Kembalikan stok
+    if (typeof _kembalikanStok === "function") {
+      await _kembalikanStok(details);
+    }
 
     await db.transaction("rw", db.penjualan, db.penjualan_detail, async function () {
-      const details = await db.penjualan_detail
-        .where("penjualan").equals(id).toArray();
       if (details.length > 0) {
         await db.penjualan_detail.bulkDelete(details.map(d => d.id));
       }

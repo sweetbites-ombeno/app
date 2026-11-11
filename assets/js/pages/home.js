@@ -138,6 +138,11 @@ function renderHomeProdukList(filter = "") {
                </div>`;
     }
 
+    const stok = Number(p.stok || 0);
+    const stokHTML = `<span class="produk-card__stok${stok <= 0 ? " is-habis" : ""}">
+        <i class="fa-solid fa-cubes" aria-hidden="true"></i>Stok : ${stok.toLocaleString("id-ID")}
+    </span>`;
+
     return `
             <div class="produk-card" data-id="${p.id}">
                 <div class="produk-card__media">${imgHTML}</div>
@@ -157,15 +162,19 @@ function renderHomeProdukList(filter = "") {
                                    aria-label="Jumlah">
                             <button type="button" class="qty-stepper__btn qty-stepper__btn--plus"
                                     data-action="home-add-qty" data-id="${p.id}"
-                                    aria-label="Tambah">
+                                    aria-label="Tambah"
+                                    ${qty >= stok ? "disabled" : ""}>
                                 <i class="fa-solid fa-plus" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
 
-                    <span class="produk-card__kategori">
-                        <i class="fa-solid fa-tag" aria-hidden="true"></i>${katName}
-                    </span>
+                    <div class="produk-card__meta">
+                        ${stokHTML}
+                        <span class="produk-card__kategori">
+                            <i class="fa-solid fa-tag" aria-hidden="true"></i>${katName}
+                        </span>
+                    </div>
                     <span class="produk-card__harga">${harga}</span>
                 </div>
             </div>
@@ -257,6 +266,12 @@ function updateCartBar() {
 let _syncTimer = null;
 function setQty(id, qty) {
   qty = Math.max(0, Math.floor(qty) || 0);
+
+  // ⬇️ Batasi qty maksimal = stok
+  const produk = _homeProdukCache.find(function (x) { return x.id === id; });
+  const stok = produk ? Number(produk.stok || 0) : 0;
+  if (qty > stok) qty = stok;
+
   if (qty === 0) delete _homeCart[id];
   else _homeCart[id] = qty;
 
@@ -266,8 +281,10 @@ function setQty(id, qty) {
   if (stepper) {
     const input = stepper.querySelector(".qty-stepper__input");
     const minusBtn = stepper.querySelector(".qty-stepper__btn--minus");
+    const plusBtn = stepper.querySelector(".qty-stepper__btn--plus");
     if (input) input.value = qty;
     if (minusBtn) minusBtn.disabled = qty === 0;
+    if (plusBtn) plusBtn.disabled = qty >= stok;   // ⬅️ disable + saat qty = stok
   }
 
   updateCartBar();

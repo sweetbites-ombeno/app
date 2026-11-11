@@ -397,17 +397,39 @@ async function _simpanPesanan(customer, tanggalPesan) {
     throw new Error("Draft penjualan milik user lain.");
   }
 
+  // ⬇️ Ambil details SEKALI di awal, dipakai untuk validasi & kurangi stok
+  const details = await db.penjualan_detail
+    .where("penjualan").equals(draftId)
+    .filter(d => !d.deleted_at)
+    .toArray();
+
+  // ⬇️ Validasi stok cukup
+  for (const d of details) {
+    const produk = await db.produk.get(d.id_product);
+    if (!produk || produk.deleted_at) continue;
+    const stokTersedia = Number(produk.stok) || 0;
+    if (stokTersedia < (Number(d.qty) || 0)) {
+      throw new Error(`Stok ${produk.name} tidak cukup (tersisa ${stokTersedia}).`);
+    }
+  }
+
   const now = new Date().toISOString();
 
-  // Update: status 2 + customer + tanggal_pesan (tanpa jam)
   await db.penjualan.update(draftId, {
     id_customer: customer.id,
     name_customer: customer.name || "",
     telp_customer: customer.no_telp || "-",
-    tanggal_pesan: tanggalPesan,   // "YYYY-MM-DD"
+    tanggal_pesan: tanggalPesan,
     status: 2,
     updated_at: now
   });
+
+  // ⬇️ Kurangi stok (pakai `details` yang sudah diambil)
+  try {
+    await _kurangiStok(details);
+  } catch (e) {
+    console.warn("[save-order] gagal kurangi stok:", e);
+  }
 
   sessionStorage.removeItem(_draftOrderKey());
   sessionStorage.removeItem(_cartKey());
@@ -423,6 +445,7 @@ async function _simpanPesanan(customer, tanggalPesan) {
  * @param {string} tanggalPesan
  */
 async function _updatePesanan(penjualanId, customer, tanggalPesan) {
+  // tidak menyentuk stok produk karena hanya edit customer dan tanggal
   const userId = sessionStorage.getItem("login");
   if (!userId) throw new Error("Sesi login habis.");
 

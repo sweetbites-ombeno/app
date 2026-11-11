@@ -4740,3 +4740,39 @@ body.page-is-order .app-header__actions {
 .riwayat-refund-badge i {
     font-size: 8px;
 }
+
+.produk-card__stok {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #059669;
+    background-color: #d1fae5;
+    padding: 2px 8px;
+    border-radius: 999px;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.produk-card__stok i {
+    font-size: 8px;
+    flex-shrink: 0;
+}
+
+.produk-list.is-grid .produk-card__stok {
+    font-size: 10px;
+    padding: 2px 6px;
+}
+
+.produk-list.is-list .produk-card__stok {
+    font-size: 11px;
+}
+
+/* Stok habis */
+.produk-card__stok.is-habis {
+    color: #b91c1c;
+    background-color: #fee2e2;
+}

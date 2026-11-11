@@ -138,6 +138,20 @@ function _debouncedSyncOrderCart() {
 
 function orderSetQty(id, qty) {
   qty = Math.max(0, Math.floor(qty) || 0);
+
+  // Batasi qty maksimal = stok
+  const produk = _orderProdukCache.find(function (x) { return x.id === id; });
+  const stok = produk ? Number(produk.stok || 0) : 0;
+  if (qty > stok) {
+    if (typeof openInfoPopup === "function") {
+      openInfoPopup(`Stok ${produk.name} hanya tersisa ${stok}.`, {
+        title: "Stok Tidak Cukup",
+        icon: "warning"
+      });
+    }
+    qty = stok;
+  }
+
   if (qty === 0) delete _orderCart[id];
   else _orderCart[id] = qty;
   saveCart(_orderCart);

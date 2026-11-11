@@ -117,6 +117,11 @@ function renderProdukList(filter = "") {
                </div>`;
     }
 
+    const stok = Number(p.stok || 0);
+    const stokHTML = `<span class="produk-card__stok">
+        <i class="fa-solid fa-cubes" aria-hidden="true"></i>Stok : ${stok.toLocaleString("id-ID")}
+    </span>`;
+
     return `
             <div class="produk-card" data-id="${p.id}">
                 <div class="produk-card__media">${imgHTML}</div>
@@ -126,6 +131,7 @@ function renderProdukList(filter = "") {
                         <span class="produk-card__kategori">
                             <i class="fa-solid fa-tag" aria-hidden="true"></i>${katName}
                         </span>
+                        ${stokHTML}
                         ${ownerHTML}
                     </div>
                     <span class="produk-card__harga">${harga}</span>

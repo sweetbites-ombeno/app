@@ -242,6 +242,7 @@ async function initDataProdukForm() {
   const inputId = document.getElementById("produkId");
   const titleEl = document.getElementById("formTitle");
   const subtitleEl = document.getElementById("formSubtitle");
+  const inputStok = document.getElementById("produkStok");
   if (!form || !inputName) return;
 
   resetDropify();
@@ -327,11 +328,15 @@ async function initDataProdukForm() {
           const hint = document.getElementById("imageHint");
           if (hint) hint.textContent = "Gambar tersimpan. Klik hapus untuk mengganti.";
         }
+        if (inputStok) {
+          inputStok.value = data.stok != null ? formatRibuan(data.stok) : "0";
+        }
       } else {
         if (titleEl) titleEl.textContent = "Tambah Produk";
         if (subtitleEl) subtitleEl.textContent = "Isi data produk baru";
         inputMode.value = "add";
         inputId.value = "";
+        if (inputStok) inputStok.value = "0";
       }
     } catch (err) {
       console.error("[produk-form] Gagal load:", err);
@@ -410,6 +415,22 @@ async function initDataProdukForm() {
     });
   }
 
+  // Format ribuan untuk stok (sama seperti harga)
+  if (inputStok) {
+    inputStok.addEventListener("input", function () {
+      const el = inputStok;
+      const rawBefore = el.value.slice(0, el.selectionStart);
+      const digitsBefore = rawBefore.replace(/\D/g, "").length;
+      el.value = formatRibuan(el.value);
+      let pos = 0, seen = 0;
+      while (pos < el.value.length && seen < digitsBefore) {
+        if (/\d/.test(el.value[pos])) seen++;
+        pos++;
+      }
+      el.setSelectionRange(pos, pos);
+    });
+  }
+
   /* ----- Submit ----- */
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
@@ -423,6 +444,21 @@ async function initDataProdukForm() {
     if (!kategori) { inputKategori.focus(); return; }
     if (isNaN(hargaNum) || hargaNum < 0) { inputHarga.focus(); return; }
 
+    let stokNum = 0;
+    if (inputStok) {
+      const raw = inputStok.value.trim();
+      if (raw === "") {
+        stokNum = 0;   // kosong = 0
+      } else {
+        stokNum = parseRibuan(raw);
+        if (isNaN(stokNum) || stokNum < 0) {
+          alert("Stok tidak valid.");
+          inputStok.focus();
+          return;
+        }
+      }
+    }
+
     const btn = document.getElementById("btnSimpanProduk");
     if (btn) btn.disabled = true;
 
@@ -432,6 +468,7 @@ async function initDataProdukForm() {
         name: name,
         kategori: kategori,
         harga_jual: hargaNum,
+        stok: stokNum,
         image_base64: _pendingImageBase64 || "",
         id_user: pemilik || (sessionStorage.getItem("login") || ""),
         updated_at: now

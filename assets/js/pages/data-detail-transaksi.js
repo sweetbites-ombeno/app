@@ -392,16 +392,25 @@ async function _prosesRefund() {
     if (btnConfirm) btnConfirm.disabled = true;
 
     try {
-        if (!userId) throw new Error("Sesi login habis.");
-
         const now = new Date().toISOString();
 
-        // Update status → 3 (refund), simpan alasan
+        // ⬇️ Ambil detail untuk kembalikan stok
+        const details = await db.penjualan_detail
+            .where("penjualan").equals(p.id)
+            .filter(d => !d.deleted_at)
+            .toArray();
+
+        // Update status → 3 (refund)
         await db.penjualan.update(p.id, {
             status: 3,
             alasan: alasan,
             updated_at: now
         });
+
+        // ⬇️ Kembalikan stok
+        if (typeof _kembalikanStok === "function") {
+            await _kembalikanStok(details);
+        }
 
         // Update cache
         p.status = 3;
@@ -409,14 +418,11 @@ async function _prosesRefund() {
         p.updated_at = now;
 
         _closeRefundModal();
-
-        // Re-render halaman detail (status card berubah merah)
         _renderDetailTransaksi(p);
 
-        // Tampilkan notifikasi sukses
         if (typeof openInfoPopup === "function") {
             openInfoPopup(
-                "Refund berhasil diproses. Pendapatan telah dikurangi.",
+                "Refund berhasil diproses. Pendapatan telah dikurangi dan stok telah dikembalikan.",
                 { title: "Refund Berhasil", icon: "success", button: "Mengerti" }
             );
         }
