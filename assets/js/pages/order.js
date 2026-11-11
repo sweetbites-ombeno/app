@@ -257,8 +257,19 @@ if (!window._orderBound) {
       e.stopPropagation();
       const id = delBtn.dataset.id;
       const name = delBtn.dataset.name || "item ini";
-      if (!confirm(`Hapus "${name}" dari pesanan?`)) return;
-      orderDeleteItem(id);
+
+      if (typeof openConfirmHapus === "function") {
+        openConfirmHapus({
+          title: "Hapus Item Pesanan?",
+          labelData: "item",
+          name: name,
+          onYes: function () { orderDeleteItem(id); },
+          onNo: function () { /* batal */ }
+        });
+      } else {
+        if (!confirm(`Hapus "${name}" dari pesanan?`)) return;
+        orderDeleteItem(id);
+      }
       return;
     }
 
@@ -371,12 +382,16 @@ async function initOrder() {
       }, 0);
 
       if (totalItems === 0) {
-        alert("Keranjang kosong. Tambahkan produk dulu sebelum menyimpan pesanan.");
+        openInfoPopup("Keranjang kosong. Tambahkan produk dulu sebelum menyimpan pesanan.", {
+          title: "Keranjang Kosong", icon: "warning"
+        });
         return;
       }
 
       if (typeof openSaveOrderPopup !== "function") {
-        alert("Fitur simpan pesanan belum siap. Muat ulang halaman.");
+        openInfoPopup("Fitur simpan pesanan belum siap. Muat ulang halaman.", {
+          title: "Belum Siap", icon: "warning"
+        });
         return;
       }
 
@@ -426,10 +441,10 @@ async function initOrder() {
             }
           );
         } else {
-          // Fallback kalau openConfirmSimpanPesanan tidak tersedia
-          if (confirm("Apakah Pesanan akan di simpan?")) {
-            openSaveOrderPopup({ from: "order" });
-          }
+          // Fallback: pakai popup info sederhana kalau openConfirmSimpanPesanan tidak ada
+          openInfoPopup("Apakah Pesanan akan di simpan? Fitur konfirmasi custom tidak tersedia, muat ulang halaman.", {
+            title: "Konfirmasi", icon: "warning"
+          });
         }
         return;
       }
@@ -766,11 +781,21 @@ function closePayModal() {
 
 async function processPayment(opts) {
   const userId = sessionStorage.getItem("login");
-  if (!userId) { alert("Sesi login habis."); return; }
+  if (!userId) {
+    openInfoPopup("Sesi login habis. Silakan login ulang.", {
+      title: "Sesi Habis", icon: "danger"
+    });
+    return;
+  }
 
   try {
     const user = await db.user.get(userId);
-    if (!user) { alert("User tidak ditemukan."); return; }
+    if (!user) {
+      openInfoPopup("User tidak ditemukan.", {
+        title: "Tidak Ditemukan", icon: "danger"
+      });
+      return;
+    }
 
     if (typeof syncCartToDB === "function") {
       await syncCartToDB(getCart(), _orderProdukCache, _orderKategoriMap);
@@ -823,7 +848,9 @@ async function processPayment(opts) {
 
   } catch (err) {
     console.error("[order] Gagal simpan pembayaran:", err);
-    alert("Gagal menyimpan pembayaran: " + (err.message || "Terjadi kesalahan"));
+    openInfoPopup("Gagal menyimpan pembayaran: " + (err.message || "Terjadi kesalahan"), {
+      title: "Gagal Menyimpan", icon: "danger"
+    });
   }
 }
 
@@ -915,7 +942,9 @@ function openSuccessPopup(data) {
   document.body.classList.add("modal-open");
 
   overlay.querySelector("#btnCetak").addEventListener("click", function () {
-    alert("Fitur cetak akan diimplementasikan nanti.");
+    openInfoPopup("Fitur cetak akan diimplementasikan nanti.", {
+      title: "Belum Tersedia", icon: "info"
+    });
   });
 
   overlay.querySelector("#btnSelesai").addEventListener("click", function () {

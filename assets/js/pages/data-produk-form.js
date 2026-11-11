@@ -150,13 +150,16 @@ async function handleProdukImageFile(file) {
 
   const allowed = ["image/png", "image/jpeg", "image/jpg"];
   if (allowed.indexOf(file.type) === -1) {
-    alert("Format harus PNG, JPG, JPEG, atau WebP.");
+    openInfoPopup("Format harus PNG, JPG, JPEG, atau WebP.", {
+      title: "Format Salah", icon: "warning"
+    });
     return;
   }
   if (file.size > PRODUK_IMAGE_MAX_BYTES) {
-    alert(
+    openInfoPopup(
       "Ukuran file maksimal " + formatFileSize(PRODUK_IMAGE_MAX_BYTES) +
-      ". File Anda: " + formatFileSize(file.size)
+      ". File Anda: " + formatFileSize(file.size),
+      { title: "File Terlalu Besar", icon: "warning" }
     );
     return;
   }
@@ -186,14 +189,18 @@ async function handleProdukImageFile(file) {
             "Siap disimpan (WebP " + formatFileSize(result.size) + ").";
         } catch (err) {
           console.error("[produk] Gagal kompres:", err);
-          alert("Gagal memproses gambar: " + (err.message || "unknown"));
+          openInfoPopup("Gagal memproses gambar: " + (err.message || "unknown"), {
+            title: "Gagal Memproses", icon: "danger"
+          });
           if (hint) hint.textContent = "Gambar akan di-crop 4:3, lalu dikompres ke WebP.";
         }
       }
     });
   } catch (err) {
     console.error("[produk] Gagal baca file:", err);
-    alert("Gagal membaca file: " + (err.message || "unknown"));
+    openInfoPopup("Gagal membaca file: " + (err.message || "unknown"), {
+      title: "Gagal Membaca File", icon: "danger"
+    });
     if (hint) hint.textContent = "Gambar akan di-crop 4:3, lalu dikompres ke WebP.";
   }
 }
@@ -291,8 +298,7 @@ async function initDataProdukForm() {
         }
       );
     } else {
-      alert("Belum ada kategori produk. Silakan tambahkan kategori terlebih dahulu.");
-      doRedirect();
+      doRedirect();  // fallback: langsung redirect tanpa popup
     }
     return; // ⬅️ hentikan init, jangan pasang handler submit
   }
@@ -452,7 +458,7 @@ async function initDataProdukForm() {
       } else {
         stokNum = parseRibuan(raw);
         if (isNaN(stokNum) || stokNum < 0) {
-          alert("Stok tidak valid.");
+          openInfoPopup("Stok tidak valid.", { title: "Stok Tidak Valid", icon: "warning" });
           inputStok.focus();
           return;
         }
@@ -484,7 +490,9 @@ async function initDataProdukForm() {
       navigateTo("data-produk");
     } catch (err) {
       console.error("[produk-form] Gagal simpan:", err);
-      alert("Gagal menyimpan: " + (err.message || "Terjadi kesalahan"));
+      openInfoPopup("Gagal menyimpan: " + (err.message || "Terjadi kesalahan"), {
+        title: "Gagal Menyimpan", icon: "danger"
+      });
       if (btn) btn.disabled = false;
     }
   });

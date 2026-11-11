@@ -139,7 +139,9 @@ async function openSaveOrderPopup(opts) {
         await syncCartToDB(getCart(), _orderProdukCache, _orderKategoriMap);
       } catch (e) {
         console.warn("[save-order] sync awal gagal:", e);
-        alert("Gagal menyiapkan draft: " + e.message);
+        openInfoPopup("Gagal menyiapkan draft: " + e.message, {
+          title: "Gagal Menyiapkan", icon: "danger"
+        });
         return;
       }
     }
@@ -147,7 +149,9 @@ async function openSaveOrderPopup(opts) {
     const cart = getCart();
     const ids = Object.keys(cart).filter(function (id) { return (cart[id] || 0) > 0; });
     if (ids.length === 0) {
-      alert("Keranjang kosong. Tambahkan produk dulu.");
+      openInfoPopup("Keranjang kosong. Tambahkan produk dulu.", {
+        title: "Keranjang Kosong", icon: "warning"
+      });
       return;
     }
 
@@ -171,7 +175,9 @@ async function openSaveOrderPopup(opts) {
       });
     } catch (e) {
       console.warn("[save-order] gagal hitung detail:", e);
-      alert("Gagal memuat detail pesanan.");
+      openInfoPopup("Gagal memuat detail pesanan.", {
+        title: "Gagal Memuat", icon: "danger"
+      });
       return;
     }
   }
@@ -299,7 +305,9 @@ async function openSaveOrderPopup(opts) {
     console.error("[save-order] Elemen modal tidak lengkap:", {
       selectEl, tanggalPesanEl, errorEl, btnConfirm
     });
-    alert("Terjadi kesalahan pada form. Muat ulang halaman.");
+    openInfoPopup("Terjadi kesalahan pada form. Muat ulang halaman.", {
+      title: "Kesalahan Form", icon: "danger"
+    });
     overlay.remove();
     document.body.classList.remove("modal-open");
     return;
@@ -794,9 +802,278 @@ function openInfoPopup(text, opts) {
   document.addEventListener("keydown", onKey);
 }
 
+/**
+ * Popup konfirmasi hapus pesanan (pengganti confirm bawaan browser).
+ *
+ * @param {object} opts
+ * @param {string} opts.name      - Nama customer/pesanan yang akan dihapus
+ * @param {Function} opts.onYes   - callback jika user pilih "Hapus"
+ * @param {Function} [opts.onNo]  - callback jika user pilih "Batal" (opsional)
+ */
+function openConfirmHapusPesanan(opts) {
+  opts = opts || {};
+  const name = opts.name || "pesanan ini";
+
+  // Guard: jangan dobel popup
+  if (document.getElementById("confirmHapusPesananModal")) return;
+
+  const overlay = document.createElement("div");
+  overlay.className = "pay-modal";
+  overlay.id = "confirmHapusPesananModal";
+  overlay.innerHTML = `
+    <div class="pay-modal__box">
+      <div class="pay-modal__icon" style="
+            width:56px;height:56px;margin:0 auto 14px;
+            border-radius:50%;display:flex;align-items:center;justify-content:center;
+            background:linear-gradient(135deg,#ef4444,#dc2626);
+            color:#fff;font-size:22px;
+            box-shadow:0 6px 16px rgba(239,68,68,0.35);">
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+      </div>
+
+      <h2 class="pay-modal__title" style="margin-bottom:6px">
+        Hapus Pesanan?
+      </h2>
+      <p class="save-order-success__text" style="margin-bottom:16px">
+        Pesanan untuk <strong>${escapeHTML(name)}</strong> akan dihapus secara permanen.
+        Tindakan ini tidak dapat dibatalkan.
+      </p>
+
+      <div class="pay-modal__actions">
+        <button type="button" class="btn-secondary" id="btnConfirmHapusNo">
+          Batal
+        </button>
+        <button type="button" class="btn-danger" id="btnConfirmHapusYes">
+          <i class="fa-solid fa-trash" aria-hidden="true"></i>
+          Iya, Hapus
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.classList.add("modal-open");
+
+  function close() {
+    overlay.remove();
+    document.body.classList.remove("modal-open");
+  }
+
+  overlay.querySelector("#btnConfirmHapusNo").addEventListener("click", function () {
+    close();
+    if (typeof opts.onNo === "function") opts.onNo();
+  });
+
+  overlay.querySelector("#btnConfirmHapusYes").addEventListener("click", function () {
+    close();
+    if (typeof opts.onYes === "function") opts.onYes();
+  });
+
+  // Klik backdrop → sama seperti Batal
+  overlay.addEventListener("click", function (e) {
+    if (e.target === overlay) {
+      close();
+      if (typeof opts.onNo === "function") opts.onNo();
+    }
+  });
+
+  // ESC → sama seperti Batal
+  function onKey(e) {
+    if (e.key === "Escape") {
+      document.removeEventListener("keydown", onKey);
+      close();
+      if (typeof opts.onNo === "function") opts.onNo();
+    }
+  }
+  document.addEventListener("keydown", onKey);
+}
+
+/**
+ * Popup konfirmasi hapus produk (pengganti confirm bawaan browser).
+ *
+ * @param {object} opts
+ * @param {string} opts.name      - Nama produk yang akan dihapus
+ * @param {Function} opts.onYes   - callback jika user pilih "Hapus"
+ * @param {Function} [opts.onNo]  - callback jika user pilih "Batal" (opsional)
+ */
+function openConfirmHapusProduk(opts) {
+  opts = opts || {};
+  const name = opts.name || "produk ini";
+
+  // Guard: jangan dobel popup
+  if (document.getElementById("confirmHapusProdukModal")) return;
+
+  const overlay = document.createElement("div");
+  overlay.className = "pay-modal";
+  overlay.id = "confirmHapusProdukModal";
+  overlay.innerHTML = `
+    <div class="pay-modal__box">
+      <div class="pay-modal__icon" style="
+            width:56px;height:56px;margin:0 auto 14px;
+            border-radius:50%;display:flex;align-items:center;justify-content:center;
+            background:linear-gradient(135deg,#ef4444,#dc2626);
+            color:#fff;font-size:22px;
+            box-shadow:0 6px 16px rgba(239,68,68,0.35);">
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+      </div>
+
+      <h2 class="pay-modal__title" style="margin-bottom:6px">
+        Hapus Produk?
+      </h2>
+      <p class="save-order-success__text" style="margin-bottom:16px">
+        Produk <strong>${escapeHTML(name)}</strong> akan dihapus.
+        Tindakan ini dapat mempengaruhi riwayat transaksi yang menggunakan produk ini.
+      </p>
+
+      <div class="pay-modal__actions">
+        <button type="button" class="btn-secondary" id="btnConfirmHapusProdukNo">
+          Batal
+        </button>
+        <button type="button" class="btn-danger" id="btnConfirmHapusProdukYes">
+          <i class="fa-solid fa-trash" aria-hidden="true"></i>
+          Iya, Hapus
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.classList.add("modal-open");
+
+  function close() {
+    overlay.remove();
+    document.body.classList.remove("modal-open");
+  }
+
+  overlay.querySelector("#btnConfirmHapusProdukNo").addEventListener("click", function () {
+    close();
+    if (typeof opts.onNo === "function") opts.onNo();
+  });
+
+  overlay.querySelector("#btnConfirmHapusProdukYes").addEventListener("click", function () {
+    close();
+    if (typeof opts.onYes === "function") opts.onYes();
+  });
+
+  // Klik backdrop → sama seperti Batal
+  overlay.addEventListener("click", function (e) {
+    if (e.target === overlay) {
+      close();
+      if (typeof opts.onNo === "function") opts.onNo();
+    }
+  });
+
+  // ESC → sama seperti Batal
+  function onKey(e) {
+    if (e.key === "Escape") {
+      document.removeEventListener("keydown", onKey);
+      close();
+      if (typeof opts.onNo === "function") opts.onNo();
+    }
+  }
+  document.addEventListener("keydown", onKey);
+}
+
+/**
+ * Popup konfirmasi hapus generik (pengganti confirm bawaan browser).
+ * Bisa dipakai untuk kategori, customer, pembelian, dll.
+ *
+ * @param {object} opts
+ * @param {string} [opts.title]      - Judul popup (default: "Hapus Data?")
+ * @param {string} opts.name         - Nama data yang akan dihapus
+ * @param {string} [opts.message]    - Pesan kustom (opsional). Kalau kosong, pakai template default.
+ * @param {string} [opts.labelData]  - Label jenis data, mis. "kategori", "customer", "pembelian"
+ *                                     (default: "data")
+ * @param {Function} opts.onYes      - callback jika user pilih "Hapus"
+ * @param {Function} [opts.onNo]     - callback jika user pilih "Batal" (opsional)
+ */
+function openConfirmHapus(opts) {
+  opts = opts || {};
+  const title = opts.title || "Hapus Data?";
+  const name = opts.name || "data ini";
+  const labelData = opts.labelData || "data";
+  const message = opts.message ||
+    `${labelData.charAt(0).toUpperCase() + labelData.slice(1)} <strong>${escapeHTML(name)}</strong> akan dihapus. Tindakan ini tidak dapat dibatalkan.`;
+
+  // Guard: jangan dobel popup
+  if (document.getElementById("confirmHapusModal")) return;
+
+  const overlay = document.createElement("div");
+  overlay.className = "pay-modal";
+  overlay.id = "confirmHapusModal";
+  overlay.innerHTML = `
+    <div class="pay-modal__box">
+      <div class="pay-modal__icon" style="
+            width:56px;height:56px;margin:0 auto 14px;
+            border-radius:50%;display:flex;align-items:center;justify-content:center;
+            background:linear-gradient(135deg,#ef4444,#dc2626);
+            color:#fff;font-size:22px;
+            box-shadow:0 6px 16px rgba(239,68,68,0.35);">
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+      </div>
+
+      <h2 class="pay-modal__title" style="margin-bottom:6px">
+        ${escapeHTML(title)}
+      </h2>
+      <p class="save-order-success__text" style="margin-bottom:16px">
+        ${message}
+      </p>
+
+      <div class="pay-modal__actions">
+        <button type="button" class="btn-secondary" id="btnConfirmHapusNo">
+          Batal
+        </button>
+        <button type="button" class="btn-danger" id="btnConfirmHapusYes">
+          <i class="fa-solid fa-trash" aria-hidden="true"></i>
+          Iya, Hapus
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.classList.add("modal-open");
+
+  function close() {
+    overlay.remove();
+    document.body.classList.remove("modal-open");
+  }
+
+  overlay.querySelector("#btnConfirmHapusNo").addEventListener("click", function () {
+    close();
+    if (typeof opts.onNo === "function") opts.onNo();
+  });
+
+  overlay.querySelector("#btnConfirmHapusYes").addEventListener("click", function () {
+    close();
+    if (typeof opts.onYes === "function") opts.onYes();
+  });
+
+  // Klik backdrop → sama seperti Batal
+  overlay.addEventListener("click", function (e) {
+    if (e.target === overlay) {
+      close();
+      if (typeof opts.onNo === "function") opts.onNo();
+    }
+  });
+
+  // ESC → sama seperti Batal
+  function onKey(e) {
+    if (e.key === "Escape") {
+      document.removeEventListener("keydown", onKey);
+      close();
+      if (typeof opts.onNo === "function") opts.onNo();
+    }
+  }
+  document.addEventListener("keydown", onKey);
+}
+
 
 
 /* ---------- Expose global ---------- */
+window.openConfirmHapus = openConfirmHapus;
+window.openConfirmHapusProduk = openConfirmHapusProduk;
+window.openConfirmHapusPesanan = openConfirmHapusPesanan;
 window.openSaveOrderPopup = openSaveOrderPopup;
 window._clearOrderFromListSession = _clearOrderFromListSession;
 window.openConfirmSimpanPesanan = openConfirmSimpanPesanan;

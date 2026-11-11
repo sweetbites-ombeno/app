@@ -94,7 +94,15 @@ function _showBackupModal() {
   return new Promise(function (resolve) {
     const modal = document.getElementById('backupModal');
     const btn = document.getElementById('btnBackupNow');
-    if (!modal || !btn) { alert('Belum ada backup hari ini.'); resolve(); return; }
+    if (!modal || !btn) {
+      if (typeof openInfoPopup === "function") {
+        openInfoPopup('Belum ada backup hari ini.', {
+          title: "Backup", icon: "info"
+        });
+      }
+      resolve();
+      return;
+    }
 
     const originalHTML = btn.innerHTML;
     modal.hidden = false;
@@ -131,8 +139,12 @@ async function cekBackupHarian() {
         await _showBackupModal();
 
         if (typeof backupDatabase !== 'function') {
-            alert('Fungsi backup tidak tersedia.');
-            return;
+          if (typeof openInfoPopup === "function") {
+            openInfoPopup('Fungsi backup tidak tersedia.', {
+              title: "Tidak Tersedia", icon: "warning"
+            });
+          }
+          return;
         }
         await backupDatabase();
         if (!_dbDeleting) {

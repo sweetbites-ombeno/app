@@ -139,13 +139,16 @@ async function _pembelianHandleImageFile(file) {
 
   const allowed = ["image/png", "image/jpeg", "image/jpg"];
   if (allowed.indexOf(file.type) === -1) {
-    alert("Format harus PNG, JPG, JPEG, atau WebP.");
+    openInfoPopup("Format harus PNG, JPG, JPEG, atau WebP.", {
+      title: "Format Salah", icon: "warning"
+    });
     return;
   }
   if (file.size > PEMBELIAN_IMAGE_MAX_BYTES) {
-    alert(
+    openInfoPopup(
       "Ukuran file maksimal " + _pembelianFormatFileSize(PEMBELIAN_IMAGE_MAX_BYTES) +
-      ". File Anda: " + _pembelianFormatFileSize(file.size)
+      ". File Anda: " + _pembelianFormatFileSize(file.size),
+      { title: "File Terlalu Besar", icon: "warning" }
     );
     return;
   }
@@ -175,14 +178,18 @@ async function _pembelianHandleImageFile(file) {
             "Siap disimpan (WebP " + _pembelianFormatFileSize(result.size) + ").";
         } catch (err) {
           console.error("[pembelian] Gagal kompres:", err);
-          alert("Gagal memproses gambar: " + (err.message || "unknown"));
+          openInfoPopup("Gagal memproses gambar: " + (err.message || "unknown"), {
+            title: "Gagal Memproses", icon: "danger"
+          });
           if (hint) hint.textContent = "Gambar akan otomatis dikonversi ke WebP.";
         }
       }
     });
   } catch (err) {
     console.error("[pembelian] Gagal baca file:", err);
-    alert("Gagal membaca file: " + (err.message || "unknown"));
+    openInfoPopup("Gagal membaca file: " + (err.message || "unknown"), {
+      title: "Gagal Membaca File", icon: "danger"
+    });
     if (hint) hint.textContent = "Gambar akan otomatis dikonversi ke WebP.";
   }
 }
@@ -424,7 +431,6 @@ async function initDataPembelianForm() {
               onClose: function () { navigateTo("data-pembelian"); }
             });
           } else {
-            alert("Data pembelian bukan milik akun Anda.");
             navigateTo("data-pembelian");
           }
         }
@@ -661,10 +667,17 @@ async function initDataPembelianForm() {
         const idx = Number(delBtn.dataset.index);
         const it = _pembelianItems[idx];
         if (!it) return;
-        if (!confirm(`Hapus item "${it.name_item || "ini"}"?`)) return;
-        _pembelianItems.splice(idx, 1);
-        delete _pembelianExpandedItem[idx];
-        _renderPembelianItems();
+
+        openConfirmHapus({
+          title: "Hapus Item Beli?",
+          labelData: "item",
+          name: it.name_item || "ini",
+          onYes: function () {
+            _pembelianItems.splice(idx, 1);
+            delete _pembelianExpandedItem[idx];
+            _renderPembelianItems();
+          }
+        });
         return;
       }
 

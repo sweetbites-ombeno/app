@@ -293,49 +293,58 @@ if (!window._pembelianBound) {
       const id = delBtn.dataset.id;
       const name = delBtn.dataset.name || "pembelian ini";
 
-      if (!confirm(`Hapus pembelian "${name}"?`)) return;
+      // ⬇️ Fungsi proses hapus (dipisah agar bisa dipakai di popup & fallback)
+      async function _prosesHapusPembelian() {
+        try {
+          const userId = sessionStorage.getItem("login");
+          const existing = await db.pembelian.get(id);
+          if (!existing || existing.deleted_at || existing.id_user !== userId) {
+            openInfoPopup("Data pembelian bukan milik akun ini.", {
+              title: "Akses Ditolak",
+              icon: "danger"
+            });
+            return;
+          }
 
-      try {
-        const userId = sessionStorage.getItem("login");
-        // ⬇️ TAMBAH: cek kepemilikan sebelum soft delete
-        const existing = await db.pembelian.get(id);
-        if (!existing || existing.deleted_at || existing.id_user !== userId) {
-          openInfoPopup("Data pembelian bukan milik akun ini.", {
-            title: "Akses Ditolak",
+          const now = new Date().toISOString();
+
+          // Soft delete pembelian
+          await db.pembelian.update(id, { deleted_at: now, updated_at: now });
+
+          // Soft delete detail terkait
+          const details = await db.pembelian_detail
+            .where("pembelian").equals(id)
+            .toArray();
+          for (const d of details) {
+            await db.pembelian_detail.update(d.id, { deleted_at: now, updated_at: now });
+          }
+
+          // Refresh cache & render
+          _pembelianCache = await _loadPembelian();
+          delete _pembelianExpanded[id];
+          _renderPembelian();
+        } catch (err) {
+          console.error("[pembelian] Gagal hapus:", err);
+          openInfoPopup("Gagal menghapus: " + (err.message || "Terjadi kesalahan"), {
+            title: "Gagal Menghapus",
             icon: "danger"
           });
-          return;
         }
+      }
 
-        const now = new Date().toISOString();
-
-        // Soft delete pembelian
-        await db.pembelian.update(id, {
-          deleted_at: now,
-          updated_at: now
+      // Pakai popup konfirmasi custom
+      if (typeof openConfirmHapus === "function") {
+        openConfirmHapus({
+          title: "Hapus Pembelian?",
+          labelData: "pembelian",
+          name: name,
+          onYes: _prosesHapusPembelian,
+          onNo: function () { /* Batal */ }
         });
-
-        // Soft delete detail terkait
-        const details = await db.pembelian_detail
-          .where("pembelian").equals(id)
-          .toArray();
-        for (const d of details) {
-          await db.pembelian_detail.update(d.id, {
-            deleted_at: now,
-            updated_at: now
-          });
-        }
-
-        // Refresh cache & render
-        _pembelianCache = await _loadPembelian();
-        delete _pembelianExpanded[id];
-        _renderPembelian();
-      } catch (err) {
-        console.error("[pembelian] Gagal hapus:", err);
-        openInfoPopup("Gagal menghapus: " + (err.message || "Terjadi kesalahan"), {
-          title: "Gagal Menghapus",
-          icon: "danger"
-        });
+      } else {
+        // Fallback
+        if (!confirm(`Hapus pembelian "${name}"?`)) return;
+        _prosesHapusPembelian();
       }
       return;
     }

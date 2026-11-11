@@ -323,7 +323,9 @@ function bindSettingActions() {
       if (typeof backupDatabase === "function") {
         backupDatabase();
       } else {
-        alert("Fungsi backup tidak tersedia.");
+        openInfoPopup("Fungsi backup tidak tersedia.", {
+          title: "Tidak Tersedia", icon: "warning"
+        });
       }
       return;
     }
@@ -332,14 +334,18 @@ function bindSettingActions() {
     if (btnReset) {
       e.preventDefault();
       if (typeof _openResetModal === "function") _openResetModal();
-      else alert("Fungsi reset tidak tersedia.");
+      else openInfoPopup("Fungsi reset tidak tersedia.", {
+        title: "Tidak Tersedia", icon: "warning"
+      });
       return;
     }
 
     const btnPassword = e.target.closest("[data-action='update-password']");
     if (btnPassword) {
       e.preventDefault();
-      alert("Fitur Update Password belum diimplementasikan.");
+      openInfoPopup("Fitur Update Password belum diimplementasikan.", {
+        title: "Belum Tersedia", icon: "info"
+      });
       return;
     }
 
@@ -368,7 +374,9 @@ function bindSettingActions() {
         return;
       }
 
-      alert(`Menu "${name}" belum diimplementasikan.`);
+      openInfoPopup(`Menu "${name}" belum diimplementasikan.`, {
+        title: "Belum Tersedia", icon: "info"
+      });
       return;
     }
   });
@@ -405,23 +413,45 @@ function bindKategoriActions() {
       e.preventDefault();
       const id = delBtn.dataset.id;
       const name = delBtn.dataset.name || "kategori ini";
-      if (!confirm(`Hapus kategori "${name}"?`)) return;
 
-      db.kategori.update(id, {
-        deleted_at: new Date().toISOString()
-      }).then(function () {
-        if (typeof loadKategoriFromDB === "function") {
-          loadKategoriFromDB();
-        }
-      }).catch(function (err) {
-        console.error("[kategori] Gagal hapus:", err);
-        // alert("Gagal menghapus: " + err.message);
-        // Sesudah
-        openInfoPopup("Gagal menghapus: " + err.message, {
-          title: "Gagal Menghapus",
-          icon: "danger"
+      // ⬇️ Pakai popup konfirmasi custom
+      if (typeof openConfirmHapus === "function") {
+        openConfirmHapus({
+          title: "Hapus Kategori?",
+          labelData: "kategori",
+          name: name,
+          onYes: function () {
+            db.kategori.update(id, { deleted_at: new Date().toISOString() })
+              .then(function () {
+                if (typeof loadKategoriFromDB === "function") loadKategoriFromDB();
+              })
+              .catch(function (err) {
+                console.error("[kategori] Gagal hapus:", err);
+                openInfoPopup("Gagal menghapus: " + err.message, {
+                  title: "Gagal Menghapus",
+                  icon: "danger"
+                });
+              });
+          },
+          onNo: function () {
+            // Batal → tidak melakukan apa-apa
+          }
         });
-      });
+      } else {
+        // Fallback kalau fungsi popup tidak tersedia
+        if (!confirm(`Hapus kategori "${name}"?`)) return;
+        db.kategori.update(id, { deleted_at: new Date().toISOString() })
+          .then(function () {
+            if (typeof loadKategoriFromDB === "function") loadKategoriFromDB();
+          })
+          .catch(function (err) {
+            console.error("[kategori] Gagal hapus:", err);
+            openInfoPopup("Gagal menghapus: " + err.message, {
+              title: "Gagal Menghapus",
+              icon: "danger"
+            });
+          });
+      }
       return;
     }
   });
@@ -475,23 +505,45 @@ function bindCustomerActions() {
       e.preventDefault();
       const id = delBtn.dataset.id;
       const name = delBtn.dataset.name || "customer ini";
-      if (!confirm(`Hapus customer "${name}"?`)) return;
 
-      db.customer.update(id, {
-        deleted_at: new Date().toISOString()
-      }).then(function () {
-        if (typeof loadCustomerFromDB === "function") {
-          loadCustomerFromDB();
-        }
-      }).catch(function (err) {
-        console.error("[customer] Gagal hapus:", err);
-        // alert("Gagal menghapus: " + err.message);
-        // Sesudah
-        openInfoPopup("Gagal menghapus: " + err.message, {
-          title: "Gagal Menghapus",
-          icon: "danger"
+      // ⬇️ Pakai popup konfirmasi custom
+      if (typeof openConfirmHapus === "function") {
+        openConfirmHapus({
+          title: "Hapus Customer?",
+          labelData: "customer",
+          name: name,
+          onYes: function () {
+            db.customer.update(id, { deleted_at: new Date().toISOString() })
+              .then(function () {
+                if (typeof loadCustomerFromDB === "function") loadCustomerFromDB();
+              })
+              .catch(function (err) {
+                console.error("[customer] Gagal hapus:", err);
+                openInfoPopup("Gagal menghapus: " + err.message, {
+                  title: "Gagal Menghapus",
+                  icon: "danger"
+                });
+              });
+          },
+          onNo: function () {
+            // Batal → tidak melakukan apa-apa
+          }
         });
-      });
+      } else {
+        // Fallback
+        if (!confirm(`Hapus customer "${name}"?`)) return;
+        db.customer.update(id, { deleted_at: new Date().toISOString() })
+          .then(function () {
+            if (typeof loadCustomerFromDB === "function") loadCustomerFromDB();
+          })
+          .catch(function (err) {
+            console.error("[customer] Gagal hapus:", err);
+            openInfoPopup("Gagal menghapus: " + err.message, {
+              title: "Gagal Menghapus",
+              icon: "danger"
+            });
+          });
+      }
       return;
     }
   });
@@ -531,10 +583,10 @@ function bindProdukActions() {
                 }
               );
             } else {
-              alert("Belum ada kategori produk. Silakan tambahkan kategori terlebih dahulu.");
+              // Fallback: langsung redirect
               navigateTo("setting");
             }
-            return; // ⬅️ STOP — jangan navigasi ke form
+            return;
           }
 
           // Ada kategori → lanjut ke form
@@ -571,21 +623,43 @@ function bindProdukActions() {
       e.preventDefault();
       const id = delBtn.dataset.id;
       const name = delBtn.dataset.name || "produk ini";
-      if (!confirm(`Hapus produk "${name}"?`)) return;
 
-      db.produk.update(id, { deleted_at: new Date().toISOString() })
-        .then(function () {
-          if (typeof loadProdukFromDB === "function") loadProdukFromDB();
-        })
-        .catch(function (err) {
-          console.error("[produk] Gagal hapus:", err);
-          // alert("Gagal menghapus: " + err.message);
-          // Sesudah
-          openInfoPopup("Gagal menghapus: " + err.message, {
-            title: "Gagal Menghapus",
-            icon: "danger"
-          });
+      // ⬇️ Pakai popup konfirmasi custom
+      if (typeof openConfirmHapusProduk === "function") {
+        openConfirmHapusProduk({
+          name: name,
+          onYes: function () {
+            db.produk.update(id, { deleted_at: new Date().toISOString() })
+              .then(function () {
+                if (typeof loadProdukFromDB === "function") loadProdukFromDB();
+              })
+              .catch(function (err) {
+                console.error("[produk] Gagal hapus:", err);
+                openInfoPopup("Gagal menghapus: " + err.message, {
+                  title: "Gagal Menghapus",
+                  icon: "danger"
+                });
+              });
+          },
+          onNo: function () {
+            // Batal → tidak melakukan apa-apa
+          }
         });
+      } else {
+        // Fallback kalau fungsi popup tidak tersedia
+        if (!confirm(`Hapus produk "${name}"?`)) return;
+        db.produk.update(id, { deleted_at: new Date().toISOString() })
+          .then(function () {
+            if (typeof loadProdukFromDB === "function") loadProdukFromDB();
+          })
+          .catch(function (err) {
+            console.error("[produk] Gagal hapus:", err);
+            openInfoPopup("Gagal menghapus: " + err.message, {
+              title: "Gagal Menghapus",
+              icon: "danger"
+            });
+          });
+      }
     }
   });
 }

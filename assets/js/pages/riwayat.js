@@ -308,7 +308,9 @@ if (!window._riwayatBound) {
         const cetakBtn = e.target.closest("[data-action='riwayat-cetak']");
         if (cetakBtn) {
             e.preventDefault();
-            alert("Fitur cetak struk akan diimplementasikan nanti.");
+            openInfoPopup("Fitur cetak struk akan diimplementasikan nanti.", {
+                title: "Belum Tersedia", icon: "info"
+            });
             return;
         }
 

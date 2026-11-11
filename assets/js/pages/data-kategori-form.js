@@ -78,7 +78,9 @@ async function initDataKategoriForm() {
             navigateTo("data-kategori");
         } catch (err) {
             console.error("[data-kategori-form] Gagal menyimpan:", err);
-            alert("Gagal menyimpan: " + (err.message || "Terjadi kesalahan"));
+            openInfoPopup("Gagal menyimpan: " + (err.message || "Terjadi kesalahan"), {
+                title: "Gagal Menyimpan", icon: "danger"
+            });
             if (btn) btn.disabled = false;
         }
     });

@@ -156,7 +156,9 @@ async function _bayarDariList(id) {
     // ⬇️ Cek ulang setelah update untuk deteksi race condition
     const afterUpdate = await db.penjualan.get(id);
     if (!afterUpdate || afterUpdate.status !== 0) {
-      alert("Pesanan sudah diproses di tempat lain.");
+      openInfoPopup("Pesanan sudah diproses di tempat lain.", {
+        title: "Sudah Diproses", icon: "warning"
+      });
       return;
     }
 
@@ -164,17 +166,38 @@ async function _bayarDariList(id) {
     const cart = getCart();
     const totalCart = Object.keys(cart).reduce((s, k) => s + (cart[k] || 0), 0);
     if (totalCart > 0) {
-        alert("Masih ada produk di Keranjang");
-        return;
+      openInfoPopup("Masih ada produk di Keranjang. Selesaikan atau kosongkan dulu.", {
+        title: "Keranjang Tidak Kosong", icon: "warning"
+      });
+      return;
     }
 
     const userId = sessionStorage.getItem("login");
-    if (!userId) { alert("Sesi login habis."); return; }
-    // ⬇️ TAMBAH: cek kepemilikan SEBELUM apa pun
+    if (!userId) {
+      openInfoPopup("Sesi login habis. Silakan login ulang.", {
+        title: "Sesi Habis", icon: "danger"
+      });
+      return;
+    }
     const p = await db.penjualan.get(id);
-    if (!p || p.deleted_at) { alert("Pesanan tidak ditemukan."); return; }
-    if (p.id_user !== userId) { alert("Pesanan bukan milik akun ini."); return; }
-    if (p.status !== 2) { alert("Pesanan sudah diproses."); return; }
+    if (!p || p.deleted_at) {
+      openInfoPopup("Pesanan tidak ditemukan.", {
+        title: "Tidak Ditemukan", icon: "danger"
+      });
+      return;
+    }
+    if (p.id_user !== userId) {
+      openInfoPopup("Pesanan bukan milik akun ini.", {
+        title: "Akses Ditolak", icon: "danger"
+      });
+      return;
+    }
+    if (p.status !== 2) {
+      openInfoPopup("Pesanan sudah diproses.", {
+        title: "Sudah Diproses", icon: "warning"
+      });
+      return;
+    }
 
     const details = await db.penjualan_detail
       .where("penjualan").equals(id)
@@ -279,21 +302,36 @@ if (!window._listPesananBound) {
           e.preventDefault();
           const id = del.dataset.id;
           const name = del.dataset.name || "pesanan ini";
-          if (!confirm(`Hapus pesanan "${name}" secara permanen?`)) return;
-          const ok = await _hapusDariList(id);
-          if (ok) {
-            _listPesananCache = _listPesananCache.filter(p => p.id !== id);
-            delete _listPesananExpanded[id];
-            _renderListPesanan();
+
+          // ⬇️ Pakai popup konfirmasi custom
+          if (typeof openConfirmHapusPesanan === "function") {
+            openConfirmHapusPesanan({
+              name: name,
+              onYes: async function () {
+                const ok = await _hapusDariList(id);
+                if (ok) {
+                  _listPesananCache = _listPesananCache.filter(p => p.id !== id);
+                  delete _listPesananExpanded[id];
+                  _renderListPesanan();
+                } else {
+                  openInfoPopup(
+                    "Pesanan tidak ditemukan atau bukan milik akun ini.",
+                    { title: "Akses Ditolak", icon: "danger", button: "Mengerti" }
+                  );
+                }
+              },
+              onNo: function () {
+                // Batal → tidak melakukan apa-apa
+              }
+            });
           } else {
-            // ⬇️ Ganti alert() dengan openInfoPopup untuk konsistensi
-            if (typeof openInfoPopup === "function") {
-              openInfoPopup(
-                "Pesanan tidak ditemukan atau bukan milik akun ini.",
-                { title: "Akses Ditolak", icon: "danger", button: "Mengerti" }
-              );
-            } else {
-              alert("Gagal menghapus pesanan.");
+            // Fallback kalau fungsi popup tidak tersedia
+            if (!confirm(`Hapus pesanan "${name}" secara permanen?`)) return;
+            const ok = await _hapusDariList(id);
+            if (ok) {
+              _listPesananCache = _listPesananCache.filter(p => p.id !== id);
+              delete _listPesananExpanded[id];
+              _renderListPesanan();
             }
           }
           return;

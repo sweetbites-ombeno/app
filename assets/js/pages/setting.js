@@ -28,8 +28,10 @@ async function initSetting() {
 async function backupDatabase() {
     // Cek dukungan library
     if (typeof db.export !== "function") {
-        alert("Fitur export tidak tersedia. Pastikan dexie-export-import dimuat.");
-        return;
+      openInfoPopup("Fitur export tidak tersedia. Pastikan dexie-export-import dimuat.", {
+        title: "Tidak Tersedia", icon: "warning"
+      });
+      return;
     }
 
     // Tombol loading state (jika dipanggil dari tombol)
@@ -88,7 +90,9 @@ async function backupDatabase() {
         setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
     } catch (err) {
         console.error("[backup] Gagal:", err);
-        alert("Gagal membuat backup: " + (err.message || "Terjadi kesalahan"));
+        openInfoPopup("Gagal membuat backup: " + (err.message || "Terjadi kesalahan"), {
+          title: "Gagal Backup", icon: "danger"
+        });
     } finally {
         // Kembalikan ikon
         if (iconEl) iconEl.className = prevIconClass;
@@ -171,7 +175,9 @@ async function _hapusDatabaseDanRedirect() {
   } catch (err) {
     _dbDeleting = false;
     console.error('[reset] Gagal hapus database:', err);
-    alert('Gagal reset database: ' + (err.message || 'Terjadi kesalahan'));
+    openInfoPopup('Gagal reset database: ' + (err.message || 'Terjadi kesalahan'), {
+      title: "Gagal Reset", icon: "danger"
+    });
   }
 }
 
@@ -207,7 +213,9 @@ function _bindResetModal() {
   // --- Step 1: Backup Dulu ---
   document.getElementById('btnResetBackup').addEventListener('click', async function () {
     if (typeof backupDatabase !== 'function') {
-      alert('Fungsi backup tidak tersedia.');
+      openInfoPopup('Fungsi backup tidak tersedia.', {
+        title: "Tidak Tersedia", icon: "warning"
+      });
       return;
     }
     const btn = this;
