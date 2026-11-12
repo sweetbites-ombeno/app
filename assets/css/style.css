@@ -5046,3 +5046,62 @@ body.page-is-order .app-header__actions {
     padding: 6px 10px;
   }
 }
+
+
+/* ============================================
+   PASSWORD TOGGLE (eye icon di input password)
+   ============================================ */
+.password-toggle {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    color: var(--color-text-muted);
+    font-size: 14px;
+    transition: background-color var(--transition), color var(--transition);
+    z-index: 2;
+}
+
+.password-toggle:hover {
+    background-color: #f1f5f9;
+    color: var(--color-primary);
+}
+
+.password-toggle:active {
+    transform: translateY(-50%) scale(0.92);
+}
+
+.password-toggle:focus-visible {
+    outline: 2px solid rgba(37, 99, 235, 0.35);
+    outline-offset: 1px;
+}
+
+
+.form-group__input:has(.password-toggle) input {
+    padding-right: 48px;
+}
+
+/* Fallback untuk browser tanpa :has() */
+@supports not selector(:has(*)) {
+    .form-group__input input[type="password"] {
+        padding-right: 48px;
+    }
+}
+
+/* ============================================
+   HALAMAN UBAH PASSWORD
+   ============================================ */
+.page--ubah-password {
+    animation: fadeInOpacity 0.25s ease;
+}
+
+.page--ubah-password .kategori-form {
+    padding-bottom: 24px;
+}

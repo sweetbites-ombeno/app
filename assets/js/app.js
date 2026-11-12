@@ -21,6 +21,7 @@ const PAGE_INIT = {
   "data-pembelian-form": initDataPembelianForm,
   "data-pembelian-detail": initDataPembelianDetail,   // ← TAMBAH
   "data-laporan": initDataLaporan,
+  "data-ubah-password": initDataUbahPassword,   // ← TAMBAH
 };
 
 const HALAMAN_LOGIN = "index.html";
@@ -118,6 +119,7 @@ const PAGE_TITLES = {
   "data-pembelian-form": "Form Pembelian - Mobile App",
   "data-pembelian-detail": "Detail Pembelian - Mobile App",   // ← TAMBAH
   "data-laporan": "Laporan Penjualan & Pembelian - Mobile App",
+  "data-ubah-password": "Ubah Password - Mobile App",   // ← TAMBAH
 };
 
 async function muat(id, file) {
@@ -197,6 +199,7 @@ async function navigateTo(page, opts = { pushState: true }) {
       "data-pembelian-form",
       "data-pembelian-detail",   // ← TAMBAH
       "data-laporan",
+      "data-ubah-password",   // ← TAMBAH
     ];
     document.body.classList.toggle(
       "hide-app-chrome",
@@ -346,9 +349,7 @@ function bindSettingActions() {
     const btnPassword = e.target.closest("[data-action='update-password']");
     if (btnPassword) {
       e.preventDefault();
-      openInfoPopup("Fitur Update Password belum diimplementasikan.", {
-        title: "Belum Tersedia", icon: "info"
-      });
+      navigateTo("data-ubah-password");   // ← ganti dari openInfoPopup
       return;
     }
 
