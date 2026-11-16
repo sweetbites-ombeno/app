@@ -37,6 +37,8 @@ const PRECACHE_URLS = [
     './assets/js/pages/data-laporan.js',
     './data-ubah-password-content.html',           // ← TAMBAH
     './assets/js/pages/data-ubah-password.js',     // ← TAMBAH
+    './data-sinkronisasi-content.html',
+    './assets/js/pages/data-sinkronisasi.js',
     // ... file JS halaman lainnya
 ];
 

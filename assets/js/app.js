@@ -22,6 +22,7 @@ const PAGE_INIT = {
   "data-pembelian-detail": initDataPembelianDetail,   // ← TAMBAH
   "data-laporan": initDataLaporan,
   "data-ubah-password": initDataUbahPassword,   // ← TAMBAH
+  "data-sinkronisasi": initDataSinkronisasi,   // ← TAMBAH
 };
 
 const HALAMAN_LOGIN = "index.html";
@@ -120,6 +121,7 @@ const PAGE_TITLES = {
   "data-pembelian-detail": "Detail Pembelian - Mobile App",   // ← TAMBAH
   "data-laporan": "Laporan Penjualan & Pembelian - Mobile App",
   "data-ubah-password": "Ubah Password - Mobile App",   // ← TAMBAH
+  "data-sinkronisasi": "Sinkronisasi Data - Mobile App",   // ← TAMBAH
 };
 
 async function muat(id, file) {
@@ -200,6 +202,7 @@ async function navigateTo(page, opts = { pushState: true }) {
       "data-pembelian-detail",   // ← TAMBAH
       "data-laporan",
       "data-ubah-password",   // ← TAMBAH
+      "data-sinkronisasi",   // ← TAMBAH
     ];
     document.body.classList.toggle(
       "hide-app-chrome",
@@ -380,6 +383,11 @@ function bindSettingActions() {
 
       if (name === "data-penjualan-pembelian") {
         navigateTo("data-laporan");
+        return;
+      }
+
+      if (name === "sinkron-data") {
+        navigateTo("data-sinkronisasi");
         return;
       }
 
